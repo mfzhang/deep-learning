@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1405244468 source:/home/crd/github/deep-learning/crbm/crbm_cpp/matrix.cpp
+	<iostream>
+	<vector>
+	"matrix.h"
+
+1405243924 /home/crd/github/deep-learning/crbm/crbm_cpp/matrix.h
+	<iostream>
+	<vector>
+
+1405244569 source:/home/crd/github/deep-learning/crbm/crbm_cpp/test.cpp
+	<iostream>
+	"matrix.h"
+
