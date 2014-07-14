@@ -1,16 +1,18 @@
 /*************************************************************************
     > File Name: matrix.h
     > Author: chenrudan
-    > Mail: chenrudan123@gmail.com 
+    > Mail: chenrudan123@gmail.com
     > Created Time: 2014年07月12日 星期六 20时25分15秒
  ************************************************************************/
+#ifndef MATRIX_H
+#define MATRIX_H
 
 #include<iostream>
 #include<vector>
 
 using namespace std;
 
-class Matrix 
+class Matrix
 {
 	public:
 		Matrix(int row, int col);
@@ -18,15 +20,27 @@ class Matrix
 
 /* Function: MatrixMultiply
  * ------------------------
- * 做矩阵快速乘法，输入两个矩阵，得到返回值矩阵的指针
+ * 做矩阵乘法，输入两个矩阵，得到返回值矩阵的指针
  */
-		Matrix MatrixMultiply(Matrix &mat_1, Matrix &mat_2);
+		static Matrix* MatrixMultiply(Matrix *mat_1, Matrix *mat_2);
+
+/* Function: MatrixAdd
+ * ------------------------
+ * 做矩阵加法，输入两个矩阵，得到返回值矩阵的指针
+ */
+        static Matrix* MatrixAdd(Matrix *mat_1, Matrix *mat_2);
+
+/* Function: MatrixSub
+ * ------------------------
+ * 做矩阵减法，输入两个矩阵，得到返回值矩阵的指针
+ */
+        static Matrix* MatrixSub(Matrix *mat_1, Matrix *mat_2);
 
 /* Function: AddElement
  * -------------------
  * 向矩阵添加元素
  */
-		void AddElement(double element);
+		void AddElement(double value);
 
 /* Function: GetRowNum
  * -------------------
@@ -46,6 +60,11 @@ class Matrix
  */
 		double GetElement(long row, long col);
 
+/* Function: ChangeElement
+ * ---------------------
+ * 返回输入的行列对应元素
+ */
+        void ChangeElement(long row, long col, double value);
 	private:
 		//记录行列值
 		long row_;
@@ -57,3 +76,5 @@ class Matrix
 		//假如表示权重，则对应该图片的权重值得到hidden层的图片
 		double **all_element_;
 };
+
+#endif /*matrix.h*/

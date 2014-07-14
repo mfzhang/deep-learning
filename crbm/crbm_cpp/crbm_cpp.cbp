@@ -32,9 +32,15 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="conv.cpp" />
+		<Unit filename="conv.h" />
+		<Unit filename="crbm.cpp" />
+		<Unit filename="crbm.h" />
 		<Unit filename="crbm_cpp.cbp" />
 		<Unit filename="matrix.cpp" />
 		<Unit filename="matrix.h" />
+		<Unit filename="preprocess.cpp" />
+		<Unit filename="preprocess.h" />
 		<Unit filename="test.cpp" />
 		<Extensions>
 			<code_completion />

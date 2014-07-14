@@ -13,8 +13,8 @@ CXXFLAGES = -O3 -DADD_
 
 test: 
 	$(CXX) $(CFLAGES) test.cpp
-	$(CXX) $(CFLAGES) matrix.cpp 
-	$(LINK) -o test test.o matrix.o
+	$(CXX) $(CFLAGES) matrix.cpp whiten.cpp 
+	$(LINK) -o test test.o matrix.o whiten.o
 	
 
 clearall:
