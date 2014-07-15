@@ -15,3 +15,9 @@ crbm结构类：包括filtering层，pooling层，向前卷积，向后卷积，
 矩阵计算类：加减乘除
 
 文件名小写加下划线，变量小写加下划线，成员变量后面加上_，函数名首字母大写
+
+在crbm中，输入图片存在vector<matrix>里面，权重也是，vector的大小就是channels的个数
+
+在这个里面不用求cost，也就不用求freeenergy
+
+dw有三个

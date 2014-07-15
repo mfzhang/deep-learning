@@ -23,24 +23,35 @@ class Matrix
  * 做矩阵乘法，输入两个矩阵，得到返回值矩阵的指针
  */
 		static Matrix* MatrixMultiply(Matrix *mat_1, Matrix *mat_2);
+		void MatrixMulCoef(float coef);
 
 /* Function: MatrixAdd
  * ------------------------
  * 做矩阵加法，输入两个矩阵，得到返回值矩阵的指针
  */
         static Matrix* MatrixAdd(Matrix *mat_1, Matrix *mat_2);
+        void MatrixAddNew(Matrix *mat, float coef);
+        static Matrix* MatrixAdd(Matrix *mat_1, float coef_1, Matrix *mat_2, float coef_2);
+
 
 /* Function: MatrixSub
  * ------------------------
  * 做矩阵减法，输入两个矩阵，得到返回值矩阵的指针
  */
         static Matrix* MatrixSub(Matrix *mat_1, Matrix *mat_2);
+        static Matrix* MatrixSub(Matrix *mat_1, float coef_1, Matrix *mat_2, float coef_2);
+
+/* Function: MatrixAddBias
+ * ------------------------
+ * 做矩阵加法，输入两个矩阵，得到返回值矩阵的指针
+ */
+        static Matrix* MatrixAddBias(Matrix *mat_1, float bias);
 
 /* Function: AddElement
  * -------------------
  * 向矩阵添加元素
  */
-		void AddElement(double value);
+		void AddElement(float value);
 
 /* Function: GetRowNum
  * -------------------
@@ -58,13 +69,13 @@ class Matrix
  * ---------------------
  * 返回输入的行列对应元素
  */
-		double GetElement(long row, long col);
+		float GetElement(long row, long col);
 
 /* Function: ChangeElement
  * ---------------------
  * 返回输入的行列对应元素
  */
-        void ChangeElement(long row, long col, double value);
+        void ChangeElement(long row, long col, float value);
 	private:
 		//记录行列值
 		long row_;
@@ -74,7 +85,7 @@ class Matrix
 		long col_unfull_pos_;
 		//一列为一张图片的像素值，或者多张图片的像素值，一行为batchSize
 		//假如表示权重，则对应该图片的权重值得到hidden层的图片
-		double **all_element_;
+		float **all_element_;
 };
 
 #endif /*matrix.h*/

@@ -21,8 +21,8 @@ Preprocess::~Preprocess()
 
 void Preprocess::BaseWhiten(Matrix *mat)
 {
-    double mean = 0;
-    double std = 0;
+    float mean = 0;
+    float std = 0;
     for(long i = 0; i < mat->GetRowNum(); i++)
     {
         for(long j = 0; j < mat->GetColNum(); j++)
@@ -43,7 +43,7 @@ void Preprocess::BaseWhiten(Matrix *mat)
     {
         for(long j = 0; j < mat->GetColNum(); j++)
         {
-            double value = (mat->GetElement(i, j) - mean)/std;
+            float value = (mat->GetElement(i, j) - mean)/std;
             mat->ChangeElement(i, j, value);
         }
     }

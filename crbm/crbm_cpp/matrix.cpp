@@ -19,10 +19,10 @@ Matrix::Matrix(int row, int col)
 	col_unfull_pos_ = 0;
 
 	//为二维数组分配内存
-	all_element_ = new double*[row];
+	all_element_ = new float*[row];
 	for(int i = 0; i < this->row_; i++)
 	{
-		all_element_[i] = new double[col];
+		all_element_[i] = new float[col];
 	}
 }
 
@@ -54,7 +54,39 @@ Matrix* Matrix::MatrixMultiply(Matrix *mat_1, Matrix *mat_2)
 	return prod_mat;
 }
 
+void Matrix::MatrixMulCoef(float coef)
+{
+    for(int i = 0; i < this->row_; i++)
+	{
+		for(int j = 0; j < this->col_; j++)
+		{
+			this->all_element_[i][j] = coef*this->all_element_[i][j];
+		}
+	}
+}
+
+void Matrix::MatrixAddNew(Matrix *mat, float coef)
+{
+    if(this->row_ != mat->GetRowNum())
+        cout << "the two matrix cannot do the addition!\n";
+    else
+    {
+        for(long i = 0; i < this->row_; i++)
+        {
+            for(long j = 0; j < this->col_; j++)
+            {
+                this->all_element_[i][j] = this->all_element_[i][j] + coef*(mat->all_element_[i][j]);
+            }
+        }
+    }
+}
+
 Matrix* Matrix::MatrixAdd(Matrix *mat_1, Matrix *mat_2)
+{
+    return MatrixAdd(mat_1, 1, mat_2, 1);
+}
+
+Matrix* Matrix::MatrixAdd(Matrix *mat_1, float coef_1, Matrix *mat_2, float coef_2)
 {
     if((mat_1->GetRowNum() != mat_2->GetRowNum())||(mat_1->GetColNum() != mat_2->GetColNum()))
     {
@@ -69,7 +101,7 @@ Matrix* Matrix::MatrixAdd(Matrix *mat_1, Matrix *mat_2)
         {
             for(long j = 0; j < prod_col; j++)
             {
-                prod_mat->all_element_[i][j] = mat_1->all_element_[i][j] + mat_2->all_element_[i][j];
+                prod_mat->all_element_[i][j] = coef_1*(mat_1->all_element_[i][j]) + coef_2*(mat_2->all_element_[i][j]);
             }
         }
         return prod_mat;
@@ -78,6 +110,11 @@ Matrix* Matrix::MatrixAdd(Matrix *mat_1, Matrix *mat_2)
 }
 
 Matrix* Matrix::MatrixSub(Matrix *mat_1, Matrix *mat_2)
+{
+    return MatrixAdd(mat_1, 1, mat_2, -1);
+}
+/*
+Matrix* Matrix::MatrixSub(Matrix *mat_1, float coef_1, Matrix *mat_2, float coef_2)
 {
     if((mat_1->GetRowNum() != mat_2->GetRowNum())||(mat_1->GetColNum() != mat_2->GetColNum()))
     {
@@ -92,18 +129,28 @@ Matrix* Matrix::MatrixSub(Matrix *mat_1, Matrix *mat_2)
         {
             for(long j = 0; j < prod_col; j++)
             {
-                prod_mat->all_element_[i][j] = mat_1->all_element_[i][j] - mat_2->all_element_[i][j];
+                prod_mat->all_element_[i][j] = coef_1*(mat_1->all_element_[i][j]) - coef_2*(mat_2->all_element_[i][j]);
             }
         }
         return prod_mat;
     }
     return 0;
+}*/
+
+Matrix* Matrix::MatrixAddBias(Matrix *mat_1, float bias)
+{
+    for(long i = 0; i < mat_1->GetRowNum(); i++)
+    {
+        for(long j = 0; j < mat_1->GetRowNum(); j++)
+        {
+            mat_1->all_element_[i][j] =  mat_1->all_element_[i][j] + bias;
+
+        }
+    }
+    return mat_1;
 }
 
-
-
-
-double Matrix::GetElement(long row, long col)
+float Matrix::GetElement(long row, long col)
 {
 	return this->all_element_[row][col];
 }
@@ -118,7 +165,7 @@ long Matrix::GetColNum()
 	return this->col_;
 }
 
-void Matrix::AddElement(double element)
+void Matrix::AddElement(float element)
 {
 	all_element_[row_unfull_pos_][col_unfull_pos_] = element;
 	col_unfull_pos_++;
@@ -134,7 +181,7 @@ void Matrix::AddElement(double element)
 	}
 }
 
-void Matrix::ChangeElement(long row, long col, double value)
+void Matrix::ChangeElement(long row, long col, float value)
 {
     all_element_[row][col] = value;
 }
