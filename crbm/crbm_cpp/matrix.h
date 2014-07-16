@@ -47,6 +47,20 @@ class Matrix
  */
         static Matrix* MatrixAddBias(Matrix *mat_1, float bias);
 
+/* Function: MatrixSum
+ * -----------------------
+ * 返回整个矩阵的总和
+ */
+        float MatrixSum();
+        float MatrixSum(Matrix *mat);
+
+ /* Function: MatrixAverage
+  * -----------------------
+  * 返回整个矩阵的均值
+  */
+        float MatrixAverage();
+        float MatrixAverage(Matrix *mat);
+
 /* Function: AddElement
  * -------------------
  * 向矩阵添加元素
@@ -86,6 +100,7 @@ class Matrix
 		//一列为一张图片的像素值，或者多张图片的像素值，一行为batchSize
 		//假如表示权重，则对应该图片的权重值得到hidden层的图片
 		float **all_element_;
+		float sum_;
 };
 
 #endif /*matrix.h*/

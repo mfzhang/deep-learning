@@ -1,18 +1,22 @@
 # depslib dependency file v1.0
-1405409028 source:/home/crd/github/deep-learning/crbm/crbm_cpp/matrix.cpp
+1405476372 source:/home/crd/github/deep-learning/crbm/crbm_cpp/matrix.cpp
 	<iostream>
 	<vector>
 	"matrix.h"
 
-1405428418 /home/crd/github/deep-learning/crbm/crbm_cpp/matrix.h
+1405476218 /home/crd/github/deep-learning/crbm/crbm_cpp/matrix.h
 	<iostream>
 	<vector>
 
-1405338901 source:/home/crd/github/deep-learning/crbm/crbm_cpp/test.cpp
+1405503312 source:/home/crd/github/deep-learning/crbm/crbm_cpp/test.cpp
 	<iostream>
+	<fstream>
+	<cstdio>
+	<cstdlib>
 	"matrix.h"
 	"preprocess.h"
 	"conv.h"
+	"crbm.h"
 
 1405313794 /home/crd/github/deep-learning/crbm/crbm_cpp/whiten.h
 	<iostream>
@@ -23,7 +27,7 @@
 	<cmath>
 	"whiten.h"
 
-1405338879 source:/home/crd/github/deep-learning/crbm/crbm_cpp/conv.cpp
+1405514640 source:/home/crd/github/deep-learning/crbm/crbm_cpp/conv.cpp
 	<iostream>
 	"conv.h"
 	"matrix.h"
@@ -41,7 +45,7 @@
 	<iostream>
 	"matrix.h"
 
-1405428975 source:/home/crd/github/deep-learning/crbm/crbm_cpp/crbm.cpp
+1405514167 source:/home/crd/github/deep-learning/crbm/crbm_cpp/crbm.cpp
 	<iostream>
 	<vector>
 	<cmath>
@@ -50,7 +54,7 @@
 	"utils.h"
 	"conv.h"
 
-1405428783 /home/crd/github/deep-learning/crbm/crbm_cpp/crbm.h
+1405514839 /home/crd/github/deep-learning/crbm/crbm_cpp/crbm.h
 	<iostream>
 	<vector>
 	"matrix.h"

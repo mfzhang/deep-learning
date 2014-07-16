@@ -17,6 +17,7 @@ Matrix::Matrix(int row, int col)
 	this->col_ = col;
 	row_unfull_pos_ = 0;
 	col_unfull_pos_ = 0;
+	this->sum_ = 0;
 
 	//为二维数组分配内存
 	all_element_ = new float*[row];
@@ -179,6 +180,7 @@ void Matrix::AddElement(float element)
 		cout << "you have enter two many element!\n" ;
 		row_unfull_pos_--;
 	}
+	this->sum_ += element;
 }
 
 void Matrix::ChangeElement(long row, long col, float value)
@@ -187,6 +189,33 @@ void Matrix::ChangeElement(long row, long col, float value)
 }
 
 
+float Matrix::MatrixSum()
+{
+   /* float sum = 0;
+    for(int i = 0; i < this->row_; i++)
+    {
+        for(int j = 0; j < this->col_; j++)
+        {
+            sum += this->all_element_[i][j];
+        }
+    }*/
+    return this->sum_;
+}
+
+float Matrix::MatrixSum(Matrix *mat)
+{
+    return mat->MatrixSum();
+}
+
+float Matrix::MatrixAverage()
+{
+    return (this->sum_/(this->row_*this->col_));
+}
+
+float Matrix::MatrixAverage(Matrix *mat)
+{
+    return mat->MatrixAverage();
+}
 
 
 

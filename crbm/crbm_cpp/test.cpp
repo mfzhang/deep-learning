@@ -6,36 +6,44 @@
  ************************************************************************/
 
 #include <iostream>
+#include <fstream>
+#include <cstdio>
+#include <cstdlib>
 #include "matrix.h"
 #include "preprocess.h"
 #include "conv.h"
+#include "crbm.h"
 
 using namespace std;
 
 int main()
 {
-	Matrix mat_1(4,4),mat_2(2,2), *mat_3;
-	for(int i = 0; i < 4; i++)
-	{
-		for(int j = 0; j < 4; j++)
-			mat_1.AddElement(j);
-	}
-	for(int i = 0; i < 2; i++)
-	{
-		for(int j = 0; j < 2; j++)
-			mat_2.AddElement(j);
-	}
+    Crbm layer_1;
+    vector<Matrix*> *input_image = new vector<Matrix*>;
+    vector<Matrix*> *output_image = new vector<Matrix*>;
+    ifstream fin("./data_batch_1.bin", ios::binary);
+    char buffer[3073];
+    fin.read(buffer, 3073);
+    int k = 1;
+    for(int j = 0; j < 3; j++)
+    {
+        Matrix *new_mat = new Matrix(32, 32);
+        for(int m = 0; m < 32; m++)
+        {
+            for(int n = 0; n < 32; n++)
+            {
+                new_mat->AddElement(atoi(&buffer[k]));
+                k++;
+                cout << new_mat->GetElement(m,n) << "\n";
+            }
+            cout << "-------------------------------";
+        }
+        Preprocess::BaseWhiten(new_mat);
+        input_image->push_back(new_mat);
+    }
+    fin.close();
+    output_image = layer_1.RunBatch(5, 10, 3, 32, input_image);
 
-	//mat_3 = Matrix::MatrixMultiply(&mat_1, &mat_2);
-	//Preprocess::BaseWhiten(mat_3);
-	mat_3 = Conv::Conv2d(&mat_1, &mat_2, 2);
-	for(int i = 0; i < 2; i++)
-	{
-		for(int j = 0; j < 2; j++)
-			cout << mat_3->GetElement(i,j) << endl;
-	}
-
-	delete mat_3;
 	return 0;
 
 }

@@ -42,6 +42,7 @@
 		<Unit filename="preprocess.cpp" />
 		<Unit filename="preprocess.h" />
 		<Unit filename="test.cpp" />
+		<Unit filename="utils.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
