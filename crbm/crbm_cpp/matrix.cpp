@@ -13,7 +13,16 @@ using namespace std;
 
 Matrix::Matrix(int row, int col)
 {
-	this->row_ = row;
+    init(row, col);
+}
+Matrix::Matrix()
+{
+
+}
+
+void Matrix::init(int row, int col)
+{
+    this->row_ = row;
 	this->col_ = col;
 	row_unfull_pos_ = 0;
 	col_unfull_pos_ = 0;
@@ -216,7 +225,6 @@ float Matrix::MatrixAverage(Matrix *mat)
 {
     return mat->MatrixAverage();
 }
-
 
 
 

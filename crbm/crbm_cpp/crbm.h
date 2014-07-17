@@ -24,19 +24,19 @@ class Crbm
  * --------------------
  * 这个函数初始化权重，输入接口为filter大小和通道数
  */
-        void FilterInit(int filter_row, int num_channels, int input_channels, int input_row);
+        void FilterInit(int filter_row, int num_channels, int input_channels, int input_row, int batch_size, int pooling_size);
 
 /* Function: ConvolutionForward
  * ----------------------------
  * 从visbile得到Hidden，返回hidden的结果值，放在一个vector里面，这个结果是采样的结果，会使用到下一层进行pooling
  */
-        void ConvolutionForward(vector<Matrix*> *input_image);
+        void ConvolutionForward(vector<Matrix*> &input_image, int pos);
 
 /* Function: ConvolutionBackward
  * ----------------------------
  * 从Hidden得到visbile，返回v的采样值，放在一个vector里面
  */
-        void ConvolutionBackward(vector<Matrix*> *hidden_map);
+        void ConvolutionBackward(vector<Matrix*> &hidden_map);
 
 /* Function: Sample
  * ----------------
@@ -48,19 +48,19 @@ class Crbm
  * ---------------------
  * 更新权重，偏置
  */
-        void ComputeDerivative(vector<Matrix*> *input_image);
+        void ComputeDerivative(vector<Matrix*> &input_image, int pos);
 
 /* Function: InitPars
  * ------------------
  * 当进行更新权重时初始化dw和pre_dw，当进行gibbs采样时初始化hn_sample等
  */
-        void InitPars(vector<Matrix*> &pars);
+        void InitPars(vector<Matrix*> &pars, int channels);
 
 /* Function: MaxPooling
  * --------------------
  * 对这一层的输出进行pooling
  */
-        vector<Matrix*>* MaxPooling();
+        vector<Matrix*> MaxPooling();
         void SubMaxPooling(float *prods, float sum);
 
 /* Function: SupplyImage
@@ -73,14 +73,13 @@ class Crbm
  * ------------------
  * 这个函数将整个过程串联起来，可调用它直接得到最后的pooling结果
  */
-        vector<Matrix*>* RunBatch(int filter_row, int num_channels, int input_channels, int input_row, \
-                                  vector<Matrix*> *input_image);
+        vector<Matrix*> RunBatch(vector<Matrix*> &input_image, int pos);
 
 /* Function: GetWeight
  * -------------------
  * 返回权重值
  */
-        vector<Matrix*>* GetWeight();
+        vector<Matrix*> GetWeight();
 
     private:
         float l2reg_;
@@ -95,6 +94,7 @@ class Crbm
         int filter_row_;
         int input_row_;
         int pooling_size_;
+        int batch_size_;
         //为true时表示求postive phase，false求negative
         bool first_conv_forward_;
         //暂时不知为何，在求输出时用到了，增大取值
@@ -102,9 +102,9 @@ class Crbm
         //输出的图片大小
         int out_size_;
         //存放这一层的所有权重值
-        vector<Matrix*> *weight_;
+        vector<Matrix*> weight_;
         //存放这一层的输出图片
-        vector<Matrix*> *feature_map_;
+        vector<Matrix*> feature_map_;
         vector<Matrix*> unsample_feature_map_;
         //存放经过对比差异CD_K更新后的v
         vector<Matrix*> vn_sample_;

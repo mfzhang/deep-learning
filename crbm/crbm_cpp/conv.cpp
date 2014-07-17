@@ -22,6 +22,7 @@ Conv::~Conv()
 Matrix* Conv::Conv2d(Matrix *input_image, Matrix *fliter, int step)
 {
     long prod_row = (input_image->GetRowNum() - fliter->GetRowNum())/step + 1;
+
     Matrix *prod_mat = new Matrix(prod_row, prod_row);
     //按照得到的feature map来进行顺序计算
     for(int i = 0; i < prod_row*prod_row; i++)

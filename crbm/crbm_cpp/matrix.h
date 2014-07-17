@@ -16,7 +16,10 @@ class Matrix
 {
 	public:
 		Matrix(int row, int col);
+		Matrix();
 		~Matrix();
+
+		void init(int row, int col);
 
 /* Function: MatrixMultiply
  * ------------------------
@@ -90,6 +93,8 @@ class Matrix
  * 返回输入的行列对应元素
  */
         void ChangeElement(long row, long col, float value);
+
+
 	private:
 		//记录行列值
 		long row_;

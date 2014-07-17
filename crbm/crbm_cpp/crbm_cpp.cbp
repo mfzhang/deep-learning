@@ -37,6 +37,8 @@
 		<Unit filename="crbm.cpp" />
 		<Unit filename="crbm.h" />
 		<Unit filename="crbm_cpp.cbp" />
+		<Unit filename="load.cpp" />
+		<Unit filename="load.h" />
 		<Unit filename="matrix.cpp" />
 		<Unit filename="matrix.h" />
 		<Unit filename="preprocess.cpp" />
