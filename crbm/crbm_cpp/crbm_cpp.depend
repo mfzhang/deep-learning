@@ -4,11 +4,11 @@
 	<vector>
 	"matrix.h"
 
-1405566418 /home/crd/github/deep-learning/crbm/crbm_cpp/matrix.h
+1405672207 /home/crd/github/deep-learning/crbm/crbm_cpp/matrix.h
 	<iostream>
 	<vector>
 
-1405599936 source:/home/crd/github/deep-learning/crbm/crbm_cpp/test.cpp
+1405648962 source:/home/crd/github/deep-learning/crbm/crbm_cpp/test.cpp
 	<iostream>
 	<fstream>
 	<cstdio>
@@ -21,6 +21,7 @@
 	"conv.h"
 	"crbm.h"
 	"load.h"
+	"show.h"
 
 1405313794 /home/crd/github/deep-learning/crbm/crbm_cpp/whiten.h
 	<iostream>
@@ -58,7 +59,7 @@
 	"utils.h"
 	"conv.h"
 
-1405585518 /home/crd/github/deep-learning/crbm/crbm_cpp/crbm.h
+1405648674 /home/crd/github/deep-learning/crbm/crbm_cpp/crbm.h
 	<iostream>
 	<vector>
 	"matrix.h"
@@ -77,4 +78,23 @@
 	<fstream>
 	<vector>
 	"load.h"
+
+1405648203 source:/home/crd/github/deep-learning/crbm/crbm_cpp/show.cpp
+	<iostream>
+	<cstdio>
+	<cstdlib>
+	<cmath>
+	"opencv2/core/core.hpp"
+	"opencv2/highgui/highgui.hpp"
+	"show.h"
+	"matrix.h"
+
+1405648203 /home/crd/github/deep-learning/crbm/crbm_cpp/show.h
+	<iostream>
+	<cstdio>
+	<cstdlib>
+	<cmath>
+	"opencv2/core/core.hpp"
+	"opencv2/highgui/highgui.hpp"
+	"matrix.h"
 

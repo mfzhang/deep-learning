@@ -61,13 +61,13 @@ class Crbm
  * 对这一层的输出进行pooling
  */
         vector<Matrix*> MaxPooling();
-        void SubMaxPooling(float *prods, float sum);
+        int SubMaxPooling(float *prods, float sum);
 
 /* Function: SupplyImage
  * --------------------
  * 将一张图按要求补零
  */
-        Matrix* SupplyImage(Matrix *mat, int supply_size, bool is_supply_final);
+        Matrix* SupplyImage(Matrix* mat, int supply_size, bool is_supply_final);
 
 /* Function: RunBatch
  * ------------------
@@ -80,6 +80,7 @@ class Crbm
  * 返回权重值
  */
         vector<Matrix*> GetWeight();
+
 
     private:
         float l2reg_;
@@ -106,6 +107,7 @@ class Crbm
         //存放这一层的输出图片
         vector<Matrix*> feature_map_;
         vector<Matrix*> unsample_feature_map_;
+        vector<Matrix*> pooling_map_;
         //存放经过对比差异CD_K更新后的v
         vector<Matrix*> vn_sample_;
         //存放经过对比差异CD_K更新后的h

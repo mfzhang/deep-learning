@@ -35,6 +35,7 @@ class Matrix
         static Matrix* MatrixAdd(Matrix *mat_1, Matrix *mat_2);
         void MatrixAddNew(Matrix *mat, float coef);
         static Matrix* MatrixAdd(Matrix *mat_1, float coef_1, Matrix *mat_2, float coef_2);
+        void MatrixAssign(Matrix *mat, float coef);
 
 
 /* Function: MatrixSub
@@ -49,6 +50,12 @@ class Matrix
  * 做矩阵加法，输入两个矩阵，得到返回值矩阵的指针
  */
         static Matrix* MatrixAddBias(Matrix *mat_1, float bias);
+
+/* Function: MatrixTranspose
+ * ------------------------
+ * 做矩阵转置
+ */
+        Matrix* MatrixTranspose();
 
 /* Function: MatrixSum
  * -----------------------
@@ -69,6 +76,7 @@ class Matrix
  * 向矩阵添加元素
  */
 		void AddElement(float value);
+		void AddElementByCol(float value);
 
 /* Function: GetRowNum
  * -------------------
@@ -93,6 +101,12 @@ class Matrix
  * 返回输入的行列对应元素
  */
         void ChangeElement(long row, long col, float value);
+
+/* Function: ClearElement
+ * ----------------------
+ * 删除内部的元素值
+ */
+        void ClearElement();
 
 
 	private:

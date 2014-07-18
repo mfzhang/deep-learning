@@ -8,6 +8,8 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <stdio.h>
+#include <cstring>
 #include "crbm.h"
 #include "matrix.h"
 #include "utils.h"
@@ -118,7 +120,7 @@ void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
             {
                 for(int j = 0; j < this->input_channels_; j++, k++)
                 {
-                    (feature_map_.at(batch_idx) + i)->MatrixAddNew(Conv::Conv2d(input_image.at(batch_idx + pos) + j, weight_.at(k), 1), 1);
+                    (feature_map_.at(batch_idx) + i)->MatrixAssign(Conv::Conv2d(input_image.at(batch_idx + pos) + j, weight_.at(k), 1), 1);
                 }
                 Matrix::MatrixAddBias((feature_map_.at(batch_idx) + i), hbias_[i]);
                 for(int m = 0; m < this->out_size_; m++)
@@ -145,7 +147,7 @@ void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
             {
                 for(int j = 0; j < this->input_channels_; j++, k++)
                 {
-                    (hn_sample_.at(batch_idx) + i)->MatrixAddNew( Conv::Conv2d((input_image.at(batch_idx + pos) + j), weight_.at(k), 1) , 1);
+                    (hn_sample_.at(batch_idx) + i)->MatrixAssign( Conv::Conv2d((input_image.at(batch_idx + pos) + j), weight_.at(k), 1) , 1);
                 }
                 Matrix::MatrixAddBias((hn_sample_.at(batch_idx) + i), hbias_[i]);
                 //采样得到h1
@@ -163,13 +165,15 @@ void Crbm::ConvolutionBackward(vector<Matrix*> &hidden_sample)
         for(int i = 0; i < this->num_channels_; i++)
         {
             Matrix *supply_hidden;
-            supply_hidden = SupplyImage((hidden_sample.at(batch_idx) + i), filter_row_ - 1, false);
+            supply_hidden = SupplyImage(hidden_sample.at(batch_idx) + i, filter_row_ - 1, false);
             //与三个权重做卷积
             for(int j = 0 ; j < this->input_channels_; j++)
             {
-                Matrix *tmp = Conv::Conv2d(supply_hidden, weight_.at(i*(this->input_channels_) + j), 1);
-                (vn_sample_.at(batch_idx) + j)->MatrixAddNew( tmp, 1);
+                Matrix *tmp = Conv::Conv2d(supply_hidden, weight_.at(i*(this->input_channels_) + j)->MatrixTranspose(), 1);
+                (vn_sample_.at(batch_idx) + j)->MatrixAssign(tmp, 1);
+                tmp->ClearElement();
             }
+            supply_hidden->ClearElement();
         }
         for(int i = 0; i < input_channels_; i++)
         {
@@ -230,7 +234,8 @@ void Crbm::ComputeDerivative(vector<Matrix*> &input_image, int pos)
                 Matrix* tmp_dw;
                 tmp_dw = Matrix::MatrixAdd( Conv::Conv2d((input_image.at(batch_idx + pos) + j), feature_map_.at(batch_idx) + i, 1), 1, \
                                              Conv::Conv2d((vn_sample_.at(batch_idx) + j), hn_sample_.at(batch_idx) + i, 1), -1);
-                dw_.at(i*input_channels_ + j)->MatrixAddNew(tmp_dw, 1);
+                dw_.at(i*input_channels_ + j)->MatrixAssign(tmp_dw, 1);
+                tmp_dw->ClearElement();
             }
             dw_.at(i*input_channels_ + j)->MatrixMulCoef(1.0/(this->batch_size_*this->out_size_*this->out_size_));
             dw_.at(i*input_channels_ + j)->MatrixAddNew(weight_.at(i*input_channels_ + j), -l2reg_);
@@ -273,7 +278,6 @@ vector<Matrix*> Crbm::MaxPooling()
 {
     if(this->out_size_%pooling_size_)
     {
-        this->out_size_ += this->out_size_%pooling_size_;
         for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
         {
             for(int i = 0; i < this->num_channels_; i++)
@@ -281,14 +285,17 @@ vector<Matrix*> Crbm::MaxPooling()
                  SupplyImage(unsample_feature_map_.at(batch_idx) + i, this->out_size_%pooling_size_, true);
             }
         }
+        this->out_size_ += this->out_size_%pooling_size_;
     }
     for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
     {
+        Matrix *p_pooling = new Matrix[num_channels_];
         for(int i = 0; i < this->num_channels_; i++)
         {
-            for(int m = 0; m < this->out_size_; m += this->pooling_size_)
+            p_pooling[i].init(out_size_/pooling_size_, out_size_/pooling_size_);
+            for(int m = 0; m < this->out_size_/pooling_size_; m ++)
             {
-                for(int n = 0; n < this->out_size_; n += this->pooling_size_)
+                for(int n = 0; n < this->out_size_/pooling_size_; n ++)
                 {
                     //针对四个块进行处理
                     float probs[this->pooling_size_*this->pooling_size_ + 1];
@@ -301,24 +308,21 @@ vector<Matrix*> Crbm::MaxPooling()
                             sum += probs[row*this->pooling_size_ + col];
                         }
                     }
-                    probs[4] = 1 / (1 + sum);
-                    SubMaxPooling(probs, sum);
-                    for(int row = 0; row < this->pooling_size_; row++)
-                    {
-                        for(int col = 0; col < this->pooling_size_; col++)
-                        {
-                            (unsample_feature_map_.at(batch_idx) + i)->ChangeElement(m+row, n+col, probs[row*this->pooling_size_ + col]);
-                        }
-                    }
-
+                    probs[this->pooling_size_*this->pooling_size_] = 1 / (1 + sum);
+                    int pos = SubMaxPooling(probs, sum);
+                    if(pos >= pooling_size_*pooling_size_)
+                        p_pooling[i].AddElement(0.0);
+                    else
+                        p_pooling[i].AddElement(1.0);
                 }
             }
         }
+        pooling_map_.push_back(p_pooling);
     }
-    return unsample_feature_map_;
+    return pooling_map_;
 }
 
-void Crbm::SubMaxPooling(float *probs, float sum)
+int Crbm::SubMaxPooling(float *probs, float sum)
 {
     for(int row = 0; row < this->pooling_size_; row++)
     {
@@ -330,19 +334,10 @@ void Crbm::SubMaxPooling(float *probs, float sum)
     float t = RandomNumber();
     int i;
     for(i = 0; t > probs[i]; i++, probs[i] += probs[i-1]);
-    for(int row = 0; row < this->pooling_size_; row++)
-    {
-        for(int col = 0; col < this->pooling_size_; col++)
-        {
-            if(row*this->pooling_size_ + col == i)
-                probs[row*this->pooling_size_ + col] = 1.0;
-            else
-                probs[row*this->pooling_size_ + col] = 0.0;
-        }
-    }
+    return i;
 }
 
-Matrix* Crbm::SupplyImage(Matrix *mat, int supply_size, bool is_supply_final)
+Matrix* Crbm::SupplyImage(Matrix* mat, int supply_size, bool is_supply_final)
 {
     if(!is_supply_final)
     {
@@ -365,11 +360,12 @@ Matrix* Crbm::SupplyImage(Matrix *mat, int supply_size, bool is_supply_final)
         {
             for(int n = 0; n < size - supply_size; n++)
             {
-                new_mat->AddElement(mat->GetElement(m - supply_size, n - supply_size));
+                new_mat->AddElement(mat->GetElement(m, n));
             }
         }
-        mat = new_mat;
-        return mat;
+        mat->ClearElement();
+        memcpy(mat, new_mat, sizeof(Matrix));
+        return new_mat;
     }
 }
 

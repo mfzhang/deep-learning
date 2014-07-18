@@ -91,6 +91,22 @@ void Matrix::MatrixAddNew(Matrix *mat, float coef)
     }
 }
 
+void Matrix::MatrixAssign(Matrix *mat, float coef)
+{
+    if(this->row_ != mat->GetRowNum())
+        cout << "the matrix cannot do the assign!\n";
+    else
+    {
+        for(long i = 0; i < this->row_; i++)
+        {
+            for(long j = 0; j < this->col_; j++)
+            {
+                this->all_element_[i][j] = coef*(mat->all_element_[i][j]);
+            }
+        }
+    }
+}
+
 Matrix* Matrix::MatrixAdd(Matrix *mat_1, Matrix *mat_2)
 {
     return MatrixAdd(mat_1, 1, mat_2, 1);
@@ -160,6 +176,20 @@ Matrix* Matrix::MatrixAddBias(Matrix *mat_1, float bias)
     return mat_1;
 }
 
+Matrix* Matrix::MatrixTranspose()
+{
+    Matrix *transpose = new Matrix(this->row_, this->col_);
+    for(int i = 0; i < this->row_; i++)
+    {
+        for(int j = 0; j < this->col_; j++)
+        {
+            transpose->ChangeElement(i, j, this->all_element_[j][i]);
+        }
+    }
+    return transpose;
+}
+
+
 float Matrix::GetElement(long row, long col)
 {
 	return this->all_element_[row][col];
@@ -190,6 +220,23 @@ void Matrix::AddElement(float element)
 		row_unfull_pos_--;
 	}
 	this->sum_ += element;
+}
+
+void Matrix::AddElementByCol(float value)
+{
+    all_element_[row_unfull_pos_][col_unfull_pos_] = value;
+	row_unfull_pos_++;
+	if(row_unfull_pos_ >= this->row_)
+	{
+		col_unfull_pos_++;
+		row_unfull_pos_ = 0;
+	}
+	if(col_unfull_pos_ > this->col_)
+	{
+		cout << "you have enter two many element!\n" ;
+		row_unfull_pos_--;
+	}
+	this->sum_ += value;
 }
 
 void Matrix::ChangeElement(long row, long col, float value)
@@ -226,7 +273,15 @@ float Matrix::MatrixAverage(Matrix *mat)
     return mat->MatrixAverage();
 }
 
+void Matrix::ClearElement()
+{
+    for(int i = 0; i < this->row_; i++)
+	{
+		delete[] all_element_[i];
+	}
+	delete[] all_element_;
 
+}
 
 
 

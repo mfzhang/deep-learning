@@ -43,6 +43,8 @@
 		<Unit filename="matrix.h" />
 		<Unit filename="preprocess.cpp" />
 		<Unit filename="preprocess.h" />
+		<Unit filename="show.cpp" />
+		<Unit filename="show.h" />
 		<Unit filename="test.cpp" />
 		<Unit filename="utils.h" />
 		<Extensions>
