@@ -111,7 +111,6 @@ void Crbm::FilterInit(int filter_row, int num_channels, int input_channels, int 
 //vector<Matrix*>* Crbm::ConvolutionForward(vector<Matrix*> *input_image)
 void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
 {
-
     if(this->first_conv_forward_)
     {
         for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
@@ -274,7 +273,7 @@ void Crbm::ComputeDerivative(vector<Matrix*> &input_image, int pos)
     }
 }
 
-vector<Matrix*> Crbm::MaxPooling()
+vector<Matrix*>* Crbm::MaxPooling()
 {
     if(this->out_size_%pooling_size_)
     {
@@ -319,7 +318,7 @@ vector<Matrix*> Crbm::MaxPooling()
         }
         pooling_map_.push_back(p_pooling);
     }
-    return pooling_map_;
+    return &pooling_map_;
 }
 
 int Crbm::SubMaxPooling(float *probs, float sum)
@@ -370,10 +369,10 @@ Matrix* Crbm::SupplyImage(Matrix* mat, int supply_size, bool is_supply_final)
 }
 
 
-vector<Matrix*> Crbm::RunBatch(vector<Matrix*> &input_image, int pos)
+vector<Matrix*>* Crbm::RunBatch(vector<Matrix*> &input_image, int pos)
 {
 
-    cout << "initialize parameters success!\n";
+
     //2.向前卷积
     ConvolutionForward(input_image, pos);
     cout << "convolution forward success!\n";
@@ -394,9 +393,9 @@ vector<Matrix*> Crbm::RunBatch(vector<Matrix*> &input_image, int pos)
     return MaxPooling();
 }
 
-vector<Matrix*> Crbm::GetWeight()
+vector<Matrix*>* Crbm::GetWeight()
 {
-    return this->weight_;
+    return &this->weight_;
 }
 
 

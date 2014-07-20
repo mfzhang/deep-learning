@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="conv.cpp" open="1" top="0" tabpos="9">
-		<Cursor position="564" topLine="18" />
+	<File name="conv.cpp" open="0" top="0" tabpos="9">
+		<Cursor position="618" topLine="15" />
 	</File>
 	<File name="conv.h" open="0" top="0" tabpos="0">
 		<Cursor position="578" topLine="0" />
 	</File>
-	<File name="crbm.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="11532" topLine="260" />
+	<File name="crbm.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="3520" topLine="15" />
 	</File>
-	<File name="crbm.h" open="1" top="0" tabpos="3">
-		<Cursor position="2426" topLine="55" />
+	<File name="crbm.h" open="1" top="0" tabpos="2">
+		<Cursor position="2401" topLine="40" />
 	</File>
-	<File name="load.cpp" open="1" top="0" tabpos="7">
-		<Cursor position="491" topLine="9" />
+	<File name="load.cpp" open="1" top="0" tabpos="6">
+		<Cursor position="491" topLine="8" />
 	</File>
-	<File name="load.h" open="1" top="0" tabpos="6">
+	<File name="load.h" open="0" top="0" tabpos="6">
 		<Cursor position="323" topLine="0" />
 	</File>
 	<File name="matrix.cpp" open="1" top="0" tabpos="4">
-		<Cursor position="2248" topLine="89" />
+		<Cursor position="1978" topLine="80" />
 	</File>
-	<File name="matrix.h" open="1" top="0" tabpos="5">
+	<File name="matrix.h" open="0" top="0" tabpos="5">
 		<Cursor position="1121" topLine="20" />
 	</File>
-	<File name="preprocess.cpp" open="1" top="0" tabpos="8">
+	<File name="preprocess.cpp" open="0" top="0" tabpos="8">
 		<Cursor position="466" topLine="25" />
 	</File>
 	<File name="preprocess.h" open="0" top="0" tabpos="5">
 		<Cursor position="448" topLine="1" />
 	</File>
-	<File name="show.cpp" open="1" top="0" tabpos="10">
-		<Cursor position="696" topLine="23" />
+	<File name="show.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="561" topLine="23" />
 	</File>
-	<File name="show.h" open="1" top="0" tabpos="11">
+	<File name="show.h" open="0" top="0" tabpos="11">
 		<Cursor position="691" topLine="1" />
 	</File>
-	<File name="test.cpp" open="1" top="1" tabpos="1">
-		<Cursor position="1113" topLine="39" />
+	<File name="test.cpp" open="1" top="1" tabpos="3">
+		<Cursor position="3185" topLine="94" />
 	</File>
 	<File name="utils.h" open="0" top="0" tabpos="6">
 		<Cursor position="538" topLine="4" />

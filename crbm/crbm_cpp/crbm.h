@@ -60,7 +60,7 @@ class Crbm
  * --------------------
  * 对这一层的输出进行pooling
  */
-        vector<Matrix*> MaxPooling();
+        vector<Matrix*>* MaxPooling();
         int SubMaxPooling(float *prods, float sum);
 
 /* Function: SupplyImage
@@ -73,13 +73,13 @@ class Crbm
  * ------------------
  * 这个函数将整个过程串联起来，可调用它直接得到最后的pooling结果
  */
-        vector<Matrix*> RunBatch(vector<Matrix*> &input_image, int pos);
+        vector<Matrix*>* RunBatch(vector<Matrix*> &input_image, int pos);
 
 /* Function: GetWeight
  * -------------------
  * 返回权重值
  */
-        vector<Matrix*> GetWeight();
+        vector<Matrix*>* GetWeight();
 
 
     private:

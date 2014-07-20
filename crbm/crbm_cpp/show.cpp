@@ -41,6 +41,9 @@ void Show::ShowMyMatrix(Matrix* m)
     namedWindow("OutputImage", WINDOW_AUTOSIZE);
     imshow("OutputImage", tmp);
     waitKey();
+
+    //因为OpenCV中的Mat图像格式文件是BGR的顺序,读取的文件是rgb
+
 }
 
 

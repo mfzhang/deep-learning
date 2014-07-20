@@ -25,52 +25,72 @@ using namespace cv;
 int main()
 {
 	Crbm layer_1;
+	Crbm layer_2;
 	vector<Matrix*> input_image;
-	vector<Matrix*> output_image;
+	vector<Matrix*> layer1_output_image;
+	vector<Matrix*> layer2_output_image;
 	Load load;
 	Show show;
 	//参数初值
 	int batch_size = 2;
-	int filter_size = 20;
-	int image_size = 32;
-	int pooling_size = 2;
-	int input_channels = 3;
-	int lay1_channels = 24;
+	int layer1_filter_size = 10;
+	int layer1_image_size = 96;
+	int layer1_pooling_size = 2;
+	int layer1_input_channels = 3;
+	int layer1_channels = 24;
+
+	int layer2_filter_size = 10;
+	int layer2_image_size = 44;
+	int layer2_pooling_size = 2;
+	int layer2_input_channels = 24;
+	int layer2_channels = 24;
 
 
-//	vector<float> *file_data = load.LoadData("../../../../crd/deeplearning/data/stl10/train_X.bin");
-	vector<float> *file_data = load.LoadData("./data_batch_1.bin");
+	vector<float> *file_data = load.LoadData("../../../../crd/deeplearning/data/stl10/train_X.bin");
+//	vector<float> *file_data = load.LoadData("./data_batch_1.bin");
 	//给100个图片赋初值
 	int k = 0;
-	for(int i = 0; i < 20; i++)
+	for(int i = 0; i < 100; i++)
 	{
 		Matrix *p_new_mat = new Matrix[3];
 		for(int j = 0; j < 3; j++)
 		{
-			p_new_mat[j].init(32,32);
-			for(int m = 0; m < 32; m++)
+			p_new_mat[j].init(96,96);
+			for(int m = 0; m < 96; m++)
 			{
-				for(int n = 0; n < 32; n++)
+				for(int n = 0; n < 96; n++)
 				{
-					p_new_mat[j].AddElementByCol(file_data->at(k));
+					p_new_mat[j].AddElementByCol(file_data[0][k]);
+			//		p_new_mat[j].AddElement(file_data->at(k));
 					k++;
 				}
 			}
+//			show.ShowMyMatrix(p_new_mat);
 			Preprocess::BaseWhiten(p_new_mat + j);
-//            show.ShowMyMatrix(p_new_mat);
 		}
 		input_image.push_back(p_new_mat);
 	}
 
-	int pos =0;
+	int pos = 0;
 	/*********************
 	*1.初始化参数         *
 	*2.训练              *
 	**********************/
-	layer_1.FilterInit(filter_size, lay1_channels, input_channels, image_size, batch_size, pooling_size);
-	for(int batch = 0; batch < 20/batch_size; batch++)
+	layer_1.FilterInit(layer1_filter_size, layer1_channels, layer1_input_channels, layer1_image_size, batch_size, layer1_pooling_size);
+	cout << "layer1 initialize parameters success!\n";
+	for(int batch = 0; batch < 100/batch_size; batch++)
 	{
-		output_image = layer_1.RunBatch(input_image, pos);
+	    vector<Matrix*> *tmp = layer_1.RunBatch(input_image, pos);
+		layer1_output_image.insert(layer1_output_image.end(), tmp->begin(), tmp->end());
+		pos += 2;
+	}
+    pos = 0;
+    layer_2.FilterInit(layer2_filter_size, layer2_channels, layer2_input_channels, layer2_image_size, batch_size, layer2_pooling_size);
+	cout << "layer2 initialize parameters success!\n";
+	for(int batch = 0; batch < 100/batch_size; batch++)
+	{
+	    vector<Matrix*> *tmp = layer_2.RunBatch(layer1_output_image, pos);
+		layer2_output_image.insert(layer2_output_image.end(), tmp->begin(), tmp->end());
 		pos += 2;
 	}
 
@@ -78,16 +98,16 @@ int main()
 	*画图显示             *
 	**********************/
 	//显示权重
-	vector<Matrix*> weight = layer_1.GetWeight();
-	int w_size = weight.size();
+	vector<Matrix*> *weight = layer_2.GetWeight();
+	int w_size = weight->size();
 	for(int i = 0; i < w_size; i++)
 	{
 	    cout << "-----------------------\n";
-        show.ShowMyMatrix(weight[i]);
+        show.ShowMyMatrix((*weight)[i]);
 	}
 
 	//显示第一层输出
-/*	ofstream layer1_output("layer1.txt");
+	ofstream layer1_output("layer1.txt");
 	int o_size = output_image.size();
 	cout << o_size << endl;
 	for(int i = 0; i < o_size; i++)
@@ -102,14 +122,14 @@ int main()
 		}
 	}
 	layer1_output.close();
-	*/
-	int o_size = output_image.size();
+
+	int o_size = layer1_output_image.size();
 	for(int i = 0; i < o_size; i++)
 	{
-	    for(int j = 0; j < lay1_channels; j++)
+	    for(int j = 0; j < layer1_channels; j++)
 	    {
 	        cout << "-----------------------\n";
-	        show.ShowMyMatrix(&output_image[i][j]);
+	        show.ShowMyMatrix(&layer1_output_image[i][j]);
 	    }
 	}
 	return 0;
