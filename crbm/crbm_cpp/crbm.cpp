@@ -310,9 +310,15 @@ vector<Matrix*>* Crbm::MaxPooling()
                     probs[this->pooling_size_*this->pooling_size_] = 1 / (1 + sum);
                     int pos = SubMaxPooling(probs, sum);
                     if(pos >= pooling_size_*pooling_size_)
+                    {
                         p_pooling[i].AddElement(0.0);
+                        cout << "0.0\n";
+                    }
                     else
+                    {
                         p_pooling[i].AddElement(1.0);
+                        cout << "1.0\n";
+                    }
                 }
             }
         }

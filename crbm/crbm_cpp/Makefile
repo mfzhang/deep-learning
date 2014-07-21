@@ -13,8 +13,8 @@ CXXFLAGES = -O3 -DADD_
 
 test: 
 	$(CXX) $(CFLAGES) test.cpp
-	$(CXX) $(CFLAGES) matrix.cpp preprocess.cpp conv.cpp crbm.cpp load.cpp show.cpp `pkg-config --cflags opencv`
-	$(LINK) -o test test.o matrix.o preprocess.o conv.o crbm.o load.o show.o `pkg-config --libs opencv`
+	$(CXX) $(CFLAGES) matrix.cpp preprocess.cpp conv.cpp crbm.cpp load.cpp show.cpp `pkg-config --cflags opencv` 
+	$(LINK) -o test test.o matrix.o preprocess.o conv.o crbm.o load.o show.o `pkg-config --libs opencv` 
 	
 
 clearall:

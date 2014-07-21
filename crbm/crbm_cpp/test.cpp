@@ -19,6 +19,8 @@
 #include "load.h"
 #include "show.h"
 
+//#include "/usr/include/python2.7/Python.h"
+
 using namespace std;
 using namespace cv;
 
@@ -33,14 +35,14 @@ int main()
 	Show show;
 	//参数初值
 	int batch_size = 2;
-	int layer1_filter_size = 10;
+	int layer1_filter_size = 15;
 	int layer1_image_size = 96;
 	int layer1_pooling_size = 2;
 	int layer1_input_channels = 3;
 	int layer1_channels = 24;
 
 	int layer2_filter_size = 10;
-	int layer2_image_size = 44;
+	int layer2_image_size = 41;
 	int layer2_pooling_size = 2;
 	int layer2_input_channels = 24;
 	int layer2_channels = 24;
@@ -55,18 +57,20 @@ int main()
 		Matrix *p_new_mat = new Matrix[3];
 		for(int j = 0; j < 3; j++)
 		{
-			p_new_mat[j].init(96,96);
-			for(int m = 0; m < 96; m++)
+			p_new_mat[j].init(layer1_image_size,layer1_image_size);
+			for(int m = 0; m < layer1_image_size; m++)
 			{
-				for(int n = 0; n < 96; n++)
+				for(int n = 0; n < layer1_image_size; n++)
 				{
 					p_new_mat[j].AddElementByCol(file_data[0][k]);
-			//		p_new_mat[j].AddElement(file_data->at(k));
+				//	p_new_mat[j].AddElement(file_data->at(k));
 					k++;
 				}
 			}
-//			show.ShowMyMatrix(p_new_mat);
+//			show.ShowMyMatrix8U(p_new_mat + j);
 			Preprocess::BaseWhiten(p_new_mat + j);
+//			show.ShowMyMatrix8U(p_new_mat + j);
+
 		}
 		input_image.push_back(p_new_mat);
 	}
@@ -76,61 +80,110 @@ int main()
 	*1.初始化参数         *
 	*2.训练              *
 	**********************/
+	int batch_all = 20;
 	layer_1.FilterInit(layer1_filter_size, layer1_channels, layer1_input_channels, layer1_image_size, batch_size, layer1_pooling_size);
 	cout << "layer1 initialize parameters success!\n";
-	for(int batch = 0; batch < 100/batch_size; batch++)
+	for(int batch = 0; batch < batch_all/batch_size; batch++)
 	{
 	    vector<Matrix*> *tmp = layer_1.RunBatch(input_image, pos);
-		layer1_output_image.insert(layer1_output_image.end(), tmp->begin(), tmp->end());
+	    if(batch == batch_all/batch_size - 1)
+	    {
+            layer1_output_image.insert(layer1_output_image.begin(), tmp->begin(), tmp->end());
+	    }
 		pos += 2;
 	}
+
     pos = 0;
     layer_2.FilterInit(layer2_filter_size, layer2_channels, layer2_input_channels, layer2_image_size, batch_size, layer2_pooling_size);
 	cout << "layer2 initialize parameters success!\n";
-	for(int batch = 0; batch < 100/batch_size; batch++)
+	for(int batch = 0; batch < batch_all/batch_size; batch++)
 	{
 	    vector<Matrix*> *tmp = layer_2.RunBatch(layer1_output_image, pos);
-		layer2_output_image.insert(layer2_output_image.end(), tmp->begin(), tmp->end());
+	    if(batch == batch_all/batch_size - 1)
+	    {
+            layer2_output_image.insert(layer2_output_image.end(), tmp->begin(), tmp->end());
+	    }
 		pos += 2;
 	}
 
 	/*********************
 	*画图显示             *
 	**********************/
-	//显示权重
-	vector<Matrix*> *weight = layer_2.GetWeight();
+		//显示权重
+	vector<Matrix*> *weight = layer_1.GetWeight();
 	int w_size = weight->size();
 	for(int i = 0; i < w_size; i++)
 	{
-	    cout << "-----------------------\n";
-        show.ShowMyMatrix((*weight)[i]);
+	    cout << "weight-----------------------\n";
+        show.ShowMyMatrix32F((*weight)[i]);
 	}
+/*
+	Py_Initialize();
+	 // 添加当前路径
+    // 把输入的字符串作为Python代码直接运行，返回
+	PyRun_SimpleString("import sys");
+	PyRun_SimpleString("sys.path.append('./')");
+    PyObject * pModule = NULL;//声明变量
+    PyObject * pFunc = NULL;// 声明变量
+    pModule =PyImport_ImportModule("hello");//这里是要调用的文件名
+    pFunc= PyObject_GetAttrString(pModule, "tile_raster_images");//这里是要调用的函数名
+
+	//设置方法的参数
+    PyObject *pArgs, *pValue *pOut;
+    pValue = PyTuple_New(w_size*5*5);
+    for(int i = 0; i < w_size; i++)
+    {
+        for(int m = 0; m < 5; m++)
+        {
+            for(int n = 0; n < 5; n++)
+            {
+                PyTuple_SetItem(pValue, i, Py_BuildValue("f", (*weight)[i]->GetElement(m, n)));
+            }
+        }
+    }
+    PyTuple_SetItem(pArgs, 0, pValue);
+    PyTuple_SetItem(pArgs, 1, Py_BuildValue("(ii)", 5,5));
+    PyTuple_SetItem(pArgs, 2, Py_BuildValue("(ii)", 10,10));
+    PyTuple_SetItem(pArgs, 3, Py_BuildValue("(ii)", 1,1));
+    pOut = PyObject_CallObject(pFunc, pArgs);
+
+    Py_DECREF(pArgs);
+    Py_DECREF(pValue);
+    Py_DECREF(pOut);
+    Py_Finalize();
+
+*/
 
 	//显示第一层输出
-	ofstream layer1_output("layer1.txt");
-	int o_size = output_image.size();
-	cout << o_size << endl;
-	for(int i = 0; i < o_size; i++)
-	{
-		for(int m = 0; m < 28; m++)
-		{
-			for(int n = 0; n < 28; n++)
-			{
-			//	cout << output_image[i]->GetElement(m, n) << "\n";
-				layer1_output << output_image[i]->GetElement(m, n) << "\n";
-			}
-		}
-	}
-	layer1_output.close();
-
+/*	ofstream layer1_output("layer1.txt");
 	int o_size = layer1_output_image.size();
+	cout << o_size << endl;
 	for(int i = 0; i < o_size; i++)
 	{
 	    for(int j = 0; j < layer1_channels; j++)
 	    {
-	        cout << "-----------------------\n";
-	        show.ShowMyMatrix(&layer1_output_image[i][j]);
+            for(int m = 0; m < 14; m++)
+            {
+                for(int n = 0; n < 14; n++)
+                {
+                //	cout << output_image[i]->GetElement(m, n) << "\n";
+                    layer1_output << layer1_output_image[i][j].GetElement(m, n) << "\n";
+                }
+            }
+	    }
+	}
+	layer1_output.close();*/
+
+	int o_size = layer2_output_image.size();
+	for(int i = 0; i < o_size; i++)
+	{
+	    for(int j = 0; j < layer2_channels; j++)
+	    {
+	        cout << "outputlayer1-----------------------\n";
+	        show.ShowMyMatrix32F(&layer2_output_image[i][j]);
 	    }
 	}
 	return 0;
 }
+
+

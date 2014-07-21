@@ -25,6 +25,7 @@ class Show
  * ---------------------------
  * 这个函数返回输入mat形成的图片
  */
-        void ShowMyMatrix(Matrix* m);
+        void ShowMyMatrix8U(Matrix* m);
+        void ShowMyMatrix32F(Matrix* m);
 };
 

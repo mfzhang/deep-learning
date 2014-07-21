@@ -25,13 +25,18 @@ Load::~Load()
 
 vector<float>* Load::LoadData(string filename)
 {
-    ifstream fin(filename.c_str(), ios::binary);
-    unsigned char buffer;
+    ifstream fin(filename.c_str(), ios::binary|ios::ate);
+    char *buffer;
+    fin.seekg(0, fin.end);
+    long m = fin.tellg();
+    buffer = new char[m];
+    fin.seekg (0, fin.beg);
     vector<float> *data = new vector<float>;
-    while(!fin.eof())
+    fin.read(buffer, m);
+    for(int i = 0; i < m; i++)
     {
-        fin >> buffer;
-        data->push_back(buffer);
+        unsigned char u_buffer = buffer[i];
+        data->push_back((float)u_buffer);
     }
     fin.close();
     return data;
