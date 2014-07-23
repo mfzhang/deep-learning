@@ -1,0 +1,49 @@
+1.实现MLP（Multilayer Perceptron）
+参考书籍：Pattern Recogniation and Mechine Learning(chap1~5，第五章就是MLP的理论基础，前四章算是机器学习的理论基础，有必要反复的研读)
+http://deeplearning.net/tutorial/mlp.html
+依照python源码写出了对应c代码
+个人认为的重点是第五章及back-propagation的思想
+我建议可以直接研究这个部分代码入手，结合代码与理论互相理解
+
+2.实现RBM（Restricted Boltzmann Machines）
+参考论文：Learning Deep Architectures for AI (chap5是RBM的理论基础)
+http://deeplearning.net/tutorial/rbm.html
+依照python源码写出对应的c++代码
+重点是概率模型的思想、求偏导的思想
+
+3.CNNs理论（）
+参考论文：gradient-based learning applied to document recognition
+http://deeplearning.net/tutorial/lenet.html
+这个代码未实现，只是把理论部分研究清楚了，但是这个能够与很多方法结合使用，所以非常有学习的必要
+
+4.目前工作及论文顺序
+除了上面RBM、CNNs，一条线是做卷积波尔兹曼机，一条线是研究cots hpc system
+CRBM：Convolutional deep belief networks for scalable unsupervised learning of hierarchical representations（在lee的个人主页上找matlab源代码）
+用GPU代码实现（这个我不太懂，主要是汪丰和叶永盛在看，我打算用c++实现）
+
+cots hpc system：
+a.natural image statistics(找相关的pca、ica、tica看即可)
+b.tiled convolutional neural networks
+c.ica with reconstruction cost for efficient overcomplete feature learning
+d.building high-level features using large scale unsupervised learning
+e.deep learning with cots hpc system
+目前最后一篇的理论大致摸清楚，但是还没写出来
+
+5.几个较好的网站推荐：
+http://ufldl.stanford.edu/wiki/index.php/UFLDL_Tutorial（斯坦福ng写的一个关于深度学习的Tutorial）
+http://deeplearning.net/tutorial/contents.html（算法python代码集合）
+http://web.eecs.umich.edu/~honglak/（一个斯坦福的深度学习研究者的个人主页，以后注意在论文作者的个人主页上查找源代码，其他人可以自己取搜一下，我这边给出了一个例子）
+http://blog.csdn.net/zouxy09/article/category/1387932(我个人认为比较好的博客，可以看看，然后就是多看看论文)
+
+6.说明
+在写c代码时候，采用了cblas库用来计算矩阵运算
+
+附录：叶永盛的代码(包括MLP和RBM，前面加了my和dataset的就是他自己写的，py是网站上的源代码)
+
+
+
+
+
+
+
+

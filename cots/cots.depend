@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1406106444 source:/home/crd/github/deep-learning/cots/load.cpp
+	<iostream>
+	<fstream>
+	<vector>
+	"load.h"
+
+1406103161 /home/crd/github/deep-learning/cots/load.h
+	<iostream>
+	<vector>
+
