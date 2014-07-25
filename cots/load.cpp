@@ -44,20 +44,24 @@ float* Load::LoadData(string filename)
     return data;
 }
 
-float* LoadPartData(string filename, long start, long end)
+float* LoadPartData(string filename, long start, int length, int interval, int times)
 {
+    //start表示起始地点，length表示一次读入的长度，times表示读多少次，intervel表示间隔
     ifstream fin(filename.c_str(), ios::binary|ios::ate);
     char *buffer;
     float *data;
-    long length = end -start;
     buffer = new char[length];
-    data = new float[length];
-    fin.seekg(start, fin.beg);
-    fin.read(buffer, length);
-    for(int i = 0; i < length; i++)
+    data = new float[length*times];
+    for(int pos = 0, k = 0; pos < times; pos++)
     {
-        unsigned char u_buffer = buffer[i];
-        data[i] = u_buffer;
+        fin.seekg(start + pos*interval, fin.beg);
+        fin.read(buffer, length);
+        for(int i = 0; i < length; i++)
+        {
+            unsigned char u_buffer = buffer[i];
+            data[k] = u_buffer;
+            k++;
+        }
     }
     fin.close();
     delete buffer;

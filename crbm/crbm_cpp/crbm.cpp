@@ -312,12 +312,10 @@ vector<Matrix*>* Crbm::MaxPooling()
                     if(pos >= pooling_size_*pooling_size_)
                     {
                         p_pooling[i].AddElement(0.0);
-                        cout << "0.0\n";
                     }
                     else
                     {
                         p_pooling[i].AddElement(1.0);
-                        cout << "1.0\n";
                     }
                 }
             }

@@ -68,7 +68,7 @@ int main()
 				}
 			}
 //			show.ShowMyMatrix8U(p_new_mat + j);
-			Preprocess::BaseWhiten(p_new_mat + j);
+//			Preprocess::BaseWhiten(p_new_mat + j);
 //			show.ShowMyMatrix8U(p_new_mat + j);
 
 		}
@@ -80,7 +80,7 @@ int main()
 	*1.初始化参数         *
 	*2.训练              *
 	**********************/
-	int batch_all = 20;
+	int batch_all = 10;
 	layer_1.FilterInit(layer1_filter_size, layer1_channels, layer1_input_channels, layer1_image_size, batch_size, layer1_pooling_size);
 	cout << "layer1 initialize parameters success!\n";
 	for(int batch = 0; batch < batch_all/batch_size; batch++)
@@ -174,10 +174,10 @@ int main()
 	}
 	layer1_output.close();*/
 
-	int o_size = layer2_output_image.size();
+	int o_size = layer1_output_image.size();
 	for(int i = 0; i < o_size; i++)
 	{
-	    for(int j = 0; j < layer2_channels; j++)
+	    for(int j = 0; j < layer1_channels; j++)
 	    {
 	        cout << "outputlayer1-----------------------\n";
 	        show.ShowMyMatrix32F(&layer2_output_image[i][j]);
