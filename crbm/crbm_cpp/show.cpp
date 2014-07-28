@@ -35,7 +35,7 @@ void Show::ShowMyMatrix8U(Matrix* m)
     {
         for(int j = 0; j < row; j++)
         {
-            tmp.at<uchar>(i,j) = m->GetElement(i, j);
+            tmp.at<uchar>(i,j) = m->GetElement(i, j)*255.0;
         }
     }
    // namedWindow("OutputImage", WINDOW_AUTOSIZE);
@@ -53,7 +53,7 @@ void Show::ShowMyMatrix32F(Matrix* m)
     {
         for(int j = 0; j < row; j++)
         {
-            tmp.at<float>(i,j) = m->GetElement(i, j);
+            tmp.at<float>(i,j) = m->GetElement(i, j)*255.0;
         }
     }
    // namedWindow("OutputImage", WINDOW_AUTOSIZE);

@@ -48,11 +48,11 @@ int main()
 	int layer2_channels = 24;
 
 
-	vector<float> *file_data = load.LoadData("../../../../crd/deeplearning/data/stl10/train_X.bin");
+	vector<float> *file_data = load.LoadData("preprocessed.bin");
 //	vector<float> *file_data = load.LoadData("./data_batch_1.bin");
 	//给100个图片赋初值
 	int k = 0;
-	for(int i = 0; i < 100; i++)
+	for(int i = 0; i < 50; i++)
 	{
 		Matrix *p_new_mat = new Matrix[3];
 		for(int j = 0; j < 3; j++)
@@ -68,9 +68,6 @@ int main()
 				}
 			}
 //			show.ShowMyMatrix8U(p_new_mat + j);
-//			Preprocess::BaseWhiten(p_new_mat + j);
-//			show.ShowMyMatrix8U(p_new_mat + j);
-
 		}
 		input_image.push_back(p_new_mat);
 	}
@@ -80,7 +77,7 @@ int main()
 	*1.初始化参数         *
 	*2.训练              *
 	**********************/
-	int batch_all = 10;
+	int batch_all = 2;
 	layer_1.FilterInit(layer1_filter_size, layer1_channels, layer1_input_channels, layer1_image_size, batch_size, layer1_pooling_size);
 	cout << "layer1 initialize parameters success!\n";
 	for(int batch = 0; batch < batch_all/batch_size; batch++)

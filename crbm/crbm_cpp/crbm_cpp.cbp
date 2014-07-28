@@ -41,8 +41,6 @@
 		<Unit filename="load.h" />
 		<Unit filename="matrix.cpp" />
 		<Unit filename="matrix.h" />
-		<Unit filename="preprocess.cpp" />
-		<Unit filename="preprocess.h" />
 		<Unit filename="show.cpp" />
 		<Unit filename="show.h" />
 		<Unit filename="test.cpp" />
