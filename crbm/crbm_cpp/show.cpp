@@ -31,6 +31,10 @@ void Show::ShowMyMatrix8U(Matrix* m)
 {
     int row = m->GetRowNum();
     Mat tmp(row, row, CV_8U);
+    float min = m->MatrixMin();
+    float max = m->MatrixMax();
+    Matrix::MatrixAddBias(m, -min);
+    m->MatrixMulCoef(1.0/max);
     for(int i = 0; i < row; i++)
     {
         for(int j = 0; j < row; j++)
@@ -38,7 +42,7 @@ void Show::ShowMyMatrix8U(Matrix* m)
             tmp.at<uchar>(i,j) = m->GetElement(i, j)*255.0;
         }
     }
-   // namedWindow("OutputImage", WINDOW_AUTOSIZE);
+  //  namedWindow("OutputImage", WINDOW_AUTOSIZE);
     namedWindow("OutputImage", WINDOW_NORMAL);
     imshow("OutputImage", tmp);
     waitKey();
@@ -53,7 +57,7 @@ void Show::ShowMyMatrix32F(Matrix* m)
     {
         for(int j = 0; j < row; j++)
         {
-            tmp.at<float>(i,j) = m->GetElement(i, j)*255.0;
+            tmp.at<float>(i,j) = m->GetElement(i, j);
         }
     }
    // namedWindow("OutputImage", WINDOW_AUTOSIZE);

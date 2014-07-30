@@ -27,12 +27,18 @@ void Matrix::init(int row, int col)
 	row_unfull_pos_ = 0;
 	col_unfull_pos_ = 0;
 	this->sum_ = 0;
+	this->min_ = 0;
+	this->max_ = 0;
 
 	//为二维数组分配内存
 	all_element_ = new float*[row];
 	for(int i = 0; i < this->row_; i++)
 	{
 		all_element_[i] = new float[col];
+		for(int j = 0; j < this->col_; j++)
+		{
+		    all_element_[i][j] = 0;
+		}
 	}
 }
 
@@ -236,7 +242,6 @@ void Matrix::AddElementByCol(float value)
 		cout << "you have enter two many element!\n" ;
 		row_unfull_pos_--;
 	}
-	this->sum_ += value;
 }
 
 void Matrix::ChangeElement(long row, long col, float value)
@@ -247,15 +252,40 @@ void Matrix::ChangeElement(long row, long col, float value)
 
 float Matrix::MatrixSum()
 {
-   /* float sum = 0;
     for(int i = 0; i < this->row_; i++)
     {
         for(int j = 0; j < this->col_; j++)
         {
-            sum += this->all_element_[i][j];
+            sum_ =+ all_element_[i][j];
         }
-    }*/
+    }
     return this->sum_;
+}
+
+float Matrix::MatrixMin()
+{
+    for(int i = 0; i < this->row_; i++)
+    {
+        for(int j = 0; j < this->col_; j++)
+        {
+             if(this->min_ > all_element_[i][j])
+                this->min_ = all_element_[i][j];
+        }
+    }
+    return this->min_;
+}
+
+float Matrix::MatrixMax()
+{
+    for(int i = 0; i < this->row_; i++)
+    {
+        for(int j = 0; j < this->col_; j++)
+        {
+             if(this->max_ < all_element_[i][j])
+                this->max_ = all_element_[i][j];
+        }
+    }
+    return this->max_;
 }
 
 float Matrix::MatrixSum(Matrix *mat)
@@ -283,7 +313,16 @@ void Matrix::ClearElement()
 
 }
 
-
+void Matrix::Display()
+{
+    for(int i = 0; i < this->row_; i++)
+    {
+        for(int j = 0; j < this->col_; j++)
+        {
+            cout << this->all_element_[i][j] << endl;
+        }
+    }
+}
 
 
 

@@ -14,6 +14,7 @@
 #include "matrix.h"
 #include "utils.h"
 #include "conv.h"
+#include "show.h"
 
 using namespace std;
 
@@ -29,15 +30,15 @@ Crbm::Crbm()
     this->epsilon_ = 0.01;
     this->momentum_ = 0.5;
     this->pooling_size_ = 2;
+    this->std_gaussian_ = 0.2;
 }
 
 Crbm::~Crbm()
 {
-//   delete this->weight_;
- //   delete this->feature_map_;
 }
 
-void Crbm::FilterInit(int filter_row, int num_channels, int input_channels, int input_row, int batch_size, int pooling_size)
+void Crbm::FilterInit(int filter_row, int num_channels, int input_channels, \
+                      int input_row, int batch_size, int pooling_size)
 {
     this->num_channels_ = num_channels;
     this->filter_row_ = filter_row;
@@ -47,18 +48,20 @@ void Crbm::FilterInit(int filter_row, int num_channels, int input_channels, int 
     this->batch_size_ = batch_size;
     this->pooling_size_ = pooling_size;
 
-    float high = 4 * sqrt(6.0 / (2 * filter_row * filter_row * num_channels));
-    float low = -high;
+//    float high = 4 * sqrt(6.0 / (2 * filter_row * filter_row * num_channels));
+ //   float low = -high;
     for(int i = 0; i < num_channels*input_channels; i++)
     {
         Matrix *tmp_weight = new Matrix(filter_row_, filter_row_);
-        this->dw_.push_back(tmp_weight);
-        this->pre_dw_.push_back(tmp_weight);
+        Matrix *tmp_dw = new Matrix(filter_row_, filter_row_);
+        Matrix *tmp_pre_dw = new Matrix(filter_row_, filter_row_);
+        this->dw_.push_back(tmp_dw);
+        this->pre_dw_.push_back(tmp_pre_dw);
         //初始化权重
         for(int j = 0; j < filter_row * filter_row - 1; j++)
         {
-            float rand_value = RandomWeight(low, high);
-            tmp_weight->AddElement(rand_value);
+            float rand_value = 0.01*RandomNormal();
+            tmp_weight->ChangeElement(j/filter_row_, j%filter_row_, rand_value);
         }
         this->weight_.push_back(tmp_weight);
     }
@@ -66,11 +69,14 @@ void Crbm::FilterInit(int filter_row, int num_channels, int input_channels, int 
     for(int i = 0; i < this->batch_size_; i++)
     {
         Matrix *tmp_vn_sample = new Matrix[input_channels_];
+        Matrix *tmp_umsample_vn_sample = new Matrix[input_channels_];
         for(int j = 0; j < this->input_channels_; j++)
         {
             tmp_vn_sample[j].init(this->input_row_, this->input_row_);
+            tmp_umsample_vn_sample[j].init(this->input_row_, this->input_row_);
         }
         vn_sample_.push_back(tmp_vn_sample);
+        unsample_vn_sample_.push_back(tmp_umsample_vn_sample);
     }
 
     for(int j = 0; j < this->input_channels_; j++)
@@ -87,22 +93,25 @@ void Crbm::FilterInit(int filter_row, int num_channels, int input_channels, int 
         Matrix *tmp_hn_sample = new Matrix[num_channels_];
         Matrix *tmp_feature_map = new Matrix[num_channels_];
         Matrix *tmp_unsample = new Matrix[num_channels_];
+        Matrix *tmp_unsample_hn_sample = new Matrix[num_channels_];
         for(int j = 0; j < this->num_channels_; j++)
         {
             tmp_hn_sample[j].init(this->out_size_, this->out_size_);
             tmp_feature_map[j].init(this->out_size_, this->out_size_);
             tmp_unsample[j].init(this->out_size_, this->out_size_);
+            tmp_unsample_hn_sample[j].init(this->out_size_, this->out_size_);
         }
         hn_sample_.push_back(tmp_hn_sample);
         //初始化feature_map
         feature_map_.push_back(tmp_feature_map);
         unsample_feature_map_.push_back(tmp_unsample);
+        unsample_hn_sample_.push_back(tmp_unsample_hn_sample);
 
     }
     for(int i = 0; i < this->num_channels_; i++)
     {
         //初始化h偏置
-        this->hbias_.push_back(0.0);
+        this->hbias_.push_back(-0.1);
         this->dhbias_.push_back(0.0);
         this->pre_dhbias_.push_back(0.0);
     }
@@ -113,32 +122,39 @@ void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
 {
     if(this->first_conv_forward_)
     {
+        InitPars(unsample_feature_map_, num_channels_);
+        InitPars(feature_map_, num_channels_);
         for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
         {
             for(int i = 0, k = 0; i < this->num_channels_; i++)
             {
                 for(int j = 0; j < this->input_channels_; j++, k++)
                 {
-                    (feature_map_.at(batch_idx) + i)->MatrixAssign(Conv::Conv2d(input_image.at(batch_idx + pos) + j, weight_.at(k), 1), 1);
+                    (unsample_feature_map_.at(batch_idx) + i)->MatrixAddNew(  \
+                                     Conv::Conv2d(input_image.at(batch_idx + pos) + j, weight_.at(k), 1), 1);
                 }
-                Matrix::MatrixAddBias((feature_map_.at(batch_idx) + i), hbias_[i]);
-                for(int m = 0; m < this->out_size_; m++)
+                Matrix::MatrixAddBias((unsample_feature_map_.at(batch_idx) + i), hbias_[i]);
+
+                (unsample_feature_map_.at(batch_idx) + i)->MatrixMulCoef(1.0/(std_gaussian_*std_gaussian_));
+              //  (unsample_feature_map_.at(batch_idx) + i)->Display();
+              //  Show show;
+              //  show.ShowMyMatrix8U(unsample_feature_map_.at(batch_idx) + i);
+          /*      for(int m = 0; m < this->out_size_; m++)
                 {
                     for(int n = 0; n < this->out_size_; n++)
                     {
-                        (unsample_feature_map_.at(batch_idx) + i)->ChangeElement(m, n, (feature_map_.at(batch_idx) + i)->GetElement(m, n));
+                        (feature_map_.at(batch_idx) + i)->ChangeElement(m, n, (unsample_feature_map_.at(batch_idx) + i)->GetElement(m, n));
                     }
-                }
+                }*/
                 //采样得到h1
-                Sample(feature_map_.at(batch_idx) +i);
+       //         Sample(feature_map_.at(batch_idx) +i);
             }
         }
         this->first_conv_forward_ = false;
-
     }
     else
     {
-        InitPars(hn_sample_, num_channels_);
+        InitPars(unsample_hn_sample_, num_channels_);
         //当进行gibbs采样时
         for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
         {
@@ -146,11 +162,38 @@ void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
             {
                 for(int j = 0; j < this->input_channels_; j++, k++)
                 {
-                    (hn_sample_.at(batch_idx) + i)->MatrixAssign( Conv::Conv2d((input_image.at(batch_idx + pos) + j), weight_.at(k), 1) , 1);
+                    (unsample_hn_sample_.at(batch_idx) + i)->MatrixAddNew( \
+                                    Conv::Conv2d((input_image.at(batch_idx + pos) + j), weight_.at(k), 1) , 1);
                 }
-                Matrix::MatrixAddBias((hn_sample_.at(batch_idx) + i), hbias_[i]);
-                //采样得到h1
-                Sample(hn_sample_.at(batch_idx) + i);
+                Matrix::MatrixAddBias((unsample_hn_sample_.at(batch_idx) + i), hbias_[i]);
+                (unsample_hn_sample_.at(batch_idx) + i)->Display();
+                (unsample_hn_sample_.at(batch_idx) + i)->MatrixMulCoef(1.0/(std_gaussian_*std_gaussian_));
+                for(int m = 0; m < this->out_size_/pooling_size_; m ++)
+                {
+                    for(int n = 0; n < this->out_size_/pooling_size_; n ++)
+                    {
+                        //针对四个块进行处理
+                        float probs[this->pooling_size_*this->pooling_size_];
+                        float sum = 0;
+                        for(int row = 0; row < this->pooling_size_; row++)
+                        {
+                            for(int col = 0; col < this->pooling_size_; col++)
+                            {
+                                probs[row*this->pooling_size_ + col] = Logisitc( \
+                                    (unsample_hn_sample_.at(batch_idx) + i)->GetElement(m*pooling_size_+row, n*pooling_size_+col));
+                                sum += probs[row*this->pooling_size_ + col];
+                            }
+                        }
+                        for(int row = 0; row < this->pooling_size_; row++)
+                        {
+                            for(int col = 0; col < this->pooling_size_; col++)
+                            {
+                                (unsample_hn_sample_.at(batch_idx) + i)->ChangeElement(m*pooling_size_+row, \
+                                                                n*pooling_size_+col, probs[row*this->pooling_size_ + col]/(1+sum));
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -158,26 +201,44 @@ void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
 
 void Crbm::ConvolutionBackward(vector<Matrix*> &hidden_sample)
 {
-    InitPars(vn_sample_, input_channels_);
+    InitPars(unsample_vn_sample_, input_channels_);
     for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
     {
         for(int i = 0; i < this->num_channels_; i++)
         {
             Matrix *supply_hidden;
             supply_hidden = SupplyImage(hidden_sample.at(batch_idx) + i, filter_row_ - 1, false);
+           // Show show;
+          //  show.ShowMyMatrix8U(supply_hidden);
+          //  supply_hidden->Display();
+           // (weight_.at(i*(this->input_channels_)))->Display();
             //与三个权重做卷积
             for(int j = 0 ; j < this->input_channels_; j++)
             {
-                Matrix *tmp = Conv::Conv2d(supply_hidden, weight_.at(i*(this->input_channels_) + j)->MatrixTranspose(), 1);
-                (vn_sample_.at(batch_idx) + j)->MatrixAssign(tmp, 1);
-                tmp->ClearElement();
+                (unsample_vn_sample_.at(batch_idx) + j)->MatrixAddNew( \
+                            Conv::Conv2d(supply_hidden, (weight_.at(i*(this->input_channels_) + j)->MatrixTranspose()), 1), 1);
             }
+
             supply_hidden->ClearElement();
         }
+
         for(int i = 0; i < input_channels_; i++)
         {
-            Matrix::MatrixAddBias((vn_sample_.at(batch_idx) + i), vbias_[i]);
-            Sample(vn_sample_.at(batch_idx) + i);
+              Matrix::MatrixAddBias((unsample_vn_sample_.at(batch_idx) + i), vbias_[i]);
+
+            Show show;
+            show.ShowMyMatrix8U(unsample_vn_sample_.at(batch_idx) + i);
+         //    (unsample_vn_sample_.at(batch_idx) + i)->MatrixMulCoef(1/24);
+           (unsample_vn_sample_.at(batch_idx) + i)->Display();
+      /*      for(int m = 0; m < this->input_row_; m++)
+            {
+                for(int n = 0; n < this->input_row_; n++)
+                {
+                    (vn_sample_.at(batch_idx) + i)->ChangeElement(m, n, (unsample_vn_sample_.at(batch_idx) + i)->GetElement(m, n));
+                }
+            }
+            Sample(vn_sample_.at(batch_idx) + i);*/
+      //      (vn_sample_.at(batch_idx) + i)->Display();
         }
     }
 }
@@ -186,28 +247,32 @@ void Crbm::InitPars(vector<Matrix*> &paras, int channels)
 {
     int length = paras.size();
     int para_size = paras.at(0)->GetRowNum();
-    paras.clear();
+    //数字全部置为0就可
     for(int i = 0; i < length; i++)
     {
-        Matrix *tmp = new Matrix[channels];
         for(int j = 0; j < channels; j++)
         {
-            tmp[j].init(para_size, para_size);
+            for(int m = 0; m < para_size; m++)
+            {
+                for(int n = 0; n < para_size; n++)
+                {
+                    paras[i][j].ChangeElement(m, n, 0.0);
+                }
+            }
         }
-        paras.push_back(tmp);
     }
 }
 
 void Crbm::Sample(Matrix *mat)
 {
-    float mean;
+/*    float mean;
     for(int i = 0; i < mat->GetRowNum(); i++)
     {
         for(int j = 0; j < mat->GetColNum(); j++)
         {
             mean = Logisitc(mat->GetElement(i, j));
             if(mean < 0 || mean > 1)
-                mean = 0.0;
+                mat->ChangeElement(i, j, 0.0);
             else
             {
                 if(CompareFloat(mean, RandomNumber()))
@@ -216,14 +281,14 @@ void Crbm::Sample(Matrix *mat)
                     mat->ChangeElement(i, j, 0.0);
             }
         }
-    }
+    }*/
 }
 
 void Crbm::ComputeDerivative(vector<Matrix*> &input_image, int pos)
 {
     //一张输入图和一张输出图来更新一组w，w共24*3组
     InitPars(this->dw_, 1);
-    InitPars(this->pre_dw_, 1);
+    //InitPars(this->pre_dw_, 1);
     for(int i = 0; i < this->num_channels_; i++)
     {
         for(int j = 0; j < this->input_channels_; j++)
@@ -231,15 +296,17 @@ void Crbm::ComputeDerivative(vector<Matrix*> &input_image, int pos)
             for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
             {
                 Matrix* tmp_dw;
-                tmp_dw = Matrix::MatrixAdd( Conv::Conv2d((input_image.at(batch_idx + pos) + j), feature_map_.at(batch_idx) + i, 1), 1, \
-                                             Conv::Conv2d((vn_sample_.at(batch_idx) + j), hn_sample_.at(batch_idx) + i, 1), -1);
-                dw_.at(i*input_channels_ + j)->MatrixAssign(tmp_dw, 1);
+                tmp_dw = Matrix::MatrixAdd( Conv::Conv2d((input_image.at(batch_idx + pos) + j), \
+                                                         unsample_feature_map_.at(batch_idx) + i, 1), 1, \
+                                             Conv::Conv2d((unsample_vn_sample_.at(batch_idx) + j), \
+                                                          unsample_hn_sample_.at(batch_idx) + i, 1), -1);
+                dw_.at(i*input_channels_ + j)->MatrixAddNew(tmp_dw, 1);
                 tmp_dw->ClearElement();
             }
             dw_.at(i*input_channels_ + j)->MatrixMulCoef(1.0/(this->batch_size_*this->out_size_*this->out_size_));
             dw_.at(i*input_channels_ + j)->MatrixAddNew(weight_.at(i*input_channels_ + j), -l2reg_);
             dw_.at(i*input_channels_ + j)->MatrixMulCoef(this->momentum_);
-            dw_.at(i*input_channels_ + j)->MatrixAddNew(pre_dw_.at(i*input_channels_ + j), this->epsilon_);
+            dw_.at(i*input_channels_ + j)->MatrixAddNew(pre_dw_.at(i*input_channels_ + j), epsilon_);
             //将dw的内容拷贝到pre_dw
             for(int m = 0; m < this->filter_row_; m++)
             {
@@ -248,17 +315,21 @@ void Crbm::ComputeDerivative(vector<Matrix*> &input_image, int pos)
                     pre_dw_.at(i*input_channels_ + j)->ChangeElement(m, n, dw_.at(i*input_channels_ + j)->GetElement(m, n));
                 }
             }
+
             //更新w
-            this->weight_.at(i*input_channels_ + j)->MatrixAddNew(this->dw_.at(i*input_channels_ + j),1);
+            this->weight_.at(i*input_channels_ + j)->MatrixAddNew(this->dw_.at(i*input_channels_ + j), 1);
         }
         //计算dh
         dhbias_.at(i) = 0;
         for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
         {
-            this->dhbias_.at(i) += ((feature_map_.at(batch_idx) + i)->MatrixSum() - (hn_sample_.at(batch_idx) + i)->MatrixSum())  \
-                          /(this->out_size_ * this->out_size_) - this->ph_lambda * ((feature_map_.at(batch_idx) + i)->MatrixAverage() - this->ph);
+            this->dhbias_.at(i) += ((unsample_feature_map_.at(batch_idx) + i)->MatrixSum() - \
+                                    (unsample_hn_sample_.at(batch_idx) + i)->MatrixSum())  \
+                                    /(this->out_size_ * this->out_size_) - \
+                                    this->ph_lambda * ((unsample_feature_map_.at(batch_idx) + i)->MatrixAverage() - this->ph);
         }
-        this->dhbias_.at(i) = (this->epsilon_*this->dhbias_.at(i) + this->momentum_*this->pre_dhbias_.at(i))/this->batch_size_;
+        this->dhbias_.at(i) = (this->epsilon_*this->dhbias_.at(i) + this->momentum_*this->pre_dhbias_.at(i))   \
+                                    /(this->batch_size_*this->out_size_*this->out_size_);
         this->pre_dhbias_.at(i) = this->dhbias_.at(i);
         //更新hbias
         this->hbias_.at(i) = this->hbias_.at(i) + this->dhbias_.at(i);
@@ -303,10 +374,22 @@ vector<Matrix*>* Crbm::MaxPooling()
                     {
                         for(int col = 0; col < this->pooling_size_; col++)
                         {
-                            probs[row*this->pooling_size_ + col] = Logisitc((unsample_feature_map_.at(batch_idx) + i)->GetElement(m+row, n+col));
+                            probs[row*this->pooling_size_ + col] = Logisitc(\
+                                    (unsample_feature_map_.at(batch_idx) + i)->GetElement(m*pooling_size_+row, n*pooling_size_+col));
                             sum += probs[row*this->pooling_size_ + col];
                         }
                     }
+                    for(int row = 0; row < this->pooling_size_; row++)
+                    {
+                        for(int col = 0; col < this->pooling_size_; col++)
+                        {
+                            (unsample_feature_map_.at(batch_idx) + i)->ChangeElement(\
+                                         m*pooling_size_+row, n*pooling_size_+col, probs[row*this->pooling_size_ + col]/(1+sum));
+                        }
+                    }
+              //      Show show;
+          //  show.ShowMyMatrix8U(unsample_feature_map_.at(batch_idx) + i);
+         // (unsample_feature_map_.at(batch_idx) + i)->Display();
                     probs[this->pooling_size_*this->pooling_size_] = 1 / (1 + sum);
                     int pos = SubMaxPooling(probs, sum);
                     if(pos >= pooling_size_*pooling_size_)
@@ -316,14 +399,23 @@ vector<Matrix*>* Crbm::MaxPooling()
                     else
                     {
                         p_pooling[i].AddElement(1.0);
+                        (feature_map_.at(batch_idx) + i)->ChangeElement(\
+                                        m*pooling_size_+pos/pooling_size_, n*pooling_size_+pos%pooling_size_, 1);
                     }
                 }
             }
+            pooling_map_.push_back(p_pooling);
         }
-        pooling_map_.push_back(p_pooling);
+
     }
     return &pooling_map_;
 }
+
+vector<Matrix*>* Crbm::GetPooling()
+{
+    return &this->pooling_map_;
+}
+
 
 int Crbm::SubMaxPooling(float *probs, float sum)
 {
@@ -350,7 +442,7 @@ Matrix* Crbm::SupplyImage(Matrix* mat, int supply_size, bool is_supply_final)
         {
             for(int n = supply_size; n < size - supply_size ; n++)
             {
-                new_mat->AddElement(mat->GetElement(m - supply_size, n - supply_size));
+                new_mat->ChangeElement(m, n, mat->GetElement(m - supply_size, n - supply_size));
             }
         }
         return new_mat;
@@ -363,7 +455,7 @@ Matrix* Crbm::SupplyImage(Matrix* mat, int supply_size, bool is_supply_final)
         {
             for(int n = 0; n < size - supply_size; n++)
             {
-                new_mat->AddElement(mat->GetElement(m, n));
+                new_mat->ChangeElement(m, n, mat->GetElement(m, n));
             }
         }
         mat->ClearElement();
@@ -375,32 +467,79 @@ Matrix* Crbm::SupplyImage(Matrix* mat, int supply_size, bool is_supply_final)
 
 vector<Matrix*>* Crbm::RunBatch(vector<Matrix*> &input_image, int pos)
 {
-
-
-    //2.向前卷积
-    ConvolutionForward(input_image, pos);
-    cout << "convolution forward success!\n";
+ //   ConvolutionForward(input_image, pos);
+    cout << "postive phase , forward success!" << endl;
+ //   MaxPooling();
+    cout << "pooling success!" << endl;
     //3.开始contrastive divergence
     for(int i = 0; i < this->CD_K_; i++)
     {
         if(i == 0)
+        {
             ConvolutionBackward(this->feature_map_);
+        }
         else
             ConvolutionBackward(this->hn_sample_);
-        ConvolutionForward(this->vn_sample_, 0);
+        ConvolutionForward(this->unsample_vn_sample_, 0);
     }
+ //   Show show;
+ //   show.ShowMyMatrix8U(unsample_vn_sample_.at(0));
     cout << "contrastive divergence success!\n";
     //4.更新权重
     ComputeDerivative(input_image, pos);
     cout << "ComputeDerivative success!\n";
+    first_conv_forward_ = true;
+    cout << "cross cost is :" << GetReconstructionCost(input_image, pos) << endl;
     //5.max_pooling并输出结果
-    return MaxPooling();
+    return GetPooling();
 }
 
 vector<Matrix*>* Crbm::GetWeight()
 {
     return &this->weight_;
 }
+
+float Crbm::GetReconstructionCost(vector<Matrix*> &input_image, int pos)
+{
+    float sum = 0.0;
+    for(int batch_idx = 0; batch_idx < this->batch_size_; batch_idx++)
+    {
+        for(int i = 0; i < this->input_channels_; i++)
+        {
+            for(int m = 0; m < this->input_row_; m++)
+            {
+                for(int n = 0; n < this->input_row_; n++)
+                {
+                    sum += ((input_image.at(batch_idx + pos) + i)->GetElement(m,n)  \
+                            - (unsample_vn_sample_.at(batch_idx) + i)->GetElement(m,n))   \
+                                *((input_image.at(batch_idx + pos) + i)->GetElement(m,n)  \
+                            - (unsample_vn_sample_.at(batch_idx) + i)->GetElement(m,n));
+                 //   cout << "input is  "<< (input_image.at(batch_idx + pos) + i)->GetElement(m,n) << endl;
+               //     cout << "reconsturction is  "<< (unsample_vn_sample_.at(batch_idx) + i)->GetElement(m,n) << endl;
+                }
+            }
+        }
+    }
+    return sqrt(sum);
+    //(batch_size_*input_channels_*input_row_*input_row_);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

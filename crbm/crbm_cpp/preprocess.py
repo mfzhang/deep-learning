@@ -32,13 +32,13 @@ def main():
 	image = np.array(f, dtype = np.uint8).reshape((5000, 3, 96*96))	
 	preprocessed = []
 
-	for i in range(0, 50):
+	for i in range(0, 100):
 		for j in range(0, 3):
 			pre_ele = preprocess(image, i, j)
 			preprocessed.append(pre_ele.tolist())
 	np.asarray(preprocessed).astype(np.float32).tofile('show.bin')			
 	f2 = np.fromfile('show.bin', dtype = np.float32)
-	image2 = np.array(f2).reshape((50, 3, 96*96))
+	image2 = np.array(f2).reshape((100, 3, 96*96))
 	print image2
 	
 """	for k in range(0, 1):

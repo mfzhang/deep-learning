@@ -30,7 +30,7 @@ int main()
 	Crbm layer_2;
 	vector<Matrix*> input_image;
 	vector<Matrix*> layer1_output_image;
-	vector<Matrix*> layer2_output_image;
+//	vector<Matrix*> layer2_output_image;
 	Load load;
 	Show show;
 	//参数初值
@@ -41,18 +41,18 @@ int main()
 	int layer1_input_channels = 3;
 	int layer1_channels = 24;
 
-	int layer2_filter_size = 10;
-	int layer2_image_size = 41;
-	int layer2_pooling_size = 2;
-	int layer2_input_channels = 24;
-	int layer2_channels = 24;
-
+	//int layer2_filter_size = 10;
+	//int layer2_image_size = 41;
+	//int layer2_pooling_size = 2;
+	//int layer2_input_channels = 24;
+	//int layer2_channels = 24;
 
 	vector<float> *file_data = load.LoadData("preprocessed.bin");
+//	vector<float> *file_data = load.LoadData("show.bin");
 //	vector<float> *file_data = load.LoadData("./data_batch_1.bin");
 	//给100个图片赋初值
 	int k = 0;
-	for(int i = 0; i < 50; i++)
+	for(int i = 0; i < 2; i++)
 	{
 		Matrix *p_new_mat = new Matrix[3];
 		for(int j = 0; j < 3; j++)
@@ -63,7 +63,7 @@ int main()
 				for(int n = 0; n < layer1_image_size; n++)
 				{
 					p_new_mat[j].AddElementByCol(file_data[0][k]);
-				//	p_new_mat[j].AddElement(file_data->at(k));
+				//	p_new_mat[j].AddElement(1);
 					k++;
 				}
 			}
@@ -77,20 +77,28 @@ int main()
 	*1.初始化参数         *
 	*2.训练              *
 	**********************/
-	int batch_all = 2;
+	int batch_all = 10;
 	layer_1.FilterInit(layer1_filter_size, layer1_channels, layer1_input_channels, layer1_image_size, batch_size, layer1_pooling_size);
 	cout << "layer1 initialize parameters success!\n";
-	for(int batch = 0; batch < batch_all/batch_size; batch++)
+	int m = 0;
+	while(m < 1)
 	{
-	    vector<Matrix*> *tmp = layer_1.RunBatch(input_image, pos);
-	    if(batch == batch_all/batch_size - 1)
-	    {
-            layer1_output_image.insert(layer1_output_image.begin(), tmp->begin(), tmp->end());
-	    }
-		pos += 2;
-	}
+        for(int batch = 0; batch < batch_all/batch_size; batch++)
+        {
+            cout << "batch size is " << batch <<  endl;
+            cout << "----------------------------\n";
+            vector<Matrix*> *tmp = layer_1.RunBatch(input_image, pos);
+            if(batch == batch_all/batch_size - 1)
+            {
+                layer1_output_image.insert(layer1_output_image.begin(), tmp->begin(), tmp->end());
+            }
+            pos += 2;
+        }
+        pos = 0;
+        m++;
+    }
 
-    pos = 0;
+/*    pos = 0;
     layer_2.FilterInit(layer2_filter_size, layer2_channels, layer2_input_channels, layer2_image_size, batch_size, layer2_pooling_size);
 	cout << "layer2 initialize parameters success!\n";
 	for(int batch = 0; batch < batch_all/batch_size; batch++)
@@ -101,7 +109,7 @@ int main()
             layer2_output_image.insert(layer2_output_image.end(), tmp->begin(), tmp->end());
 	    }
 		pos += 2;
-	}
+	}*/
 
 	/*********************
 	*画图显示             *
@@ -112,7 +120,7 @@ int main()
 	for(int i = 0; i < w_size; i++)
 	{
 	    cout << "weight-----------------------\n";
-        show.ShowMyMatrix32F((*weight)[i]);
+        show.ShowMyMatrix8U((*weight)[i]);
 	}
 /*
 	Py_Initialize();
@@ -171,15 +179,15 @@ int main()
 	}
 	layer1_output.close();*/
 
-	int o_size = layer1_output_image.size();
+/*	int o_size = layer1_output_image.size();
 	for(int i = 0; i < o_size; i++)
 	{
 	    for(int j = 0; j < layer1_channels; j++)
 	    {
 	        cout << "outputlayer1-----------------------\n";
-	        show.ShowMyMatrix32F(&layer2_output_image[i][j]);
+	        show.ShowMyMatrix8U(&layer2_output_image[i][j]);
 	    }
-	}
+	}*/
 	return 0;
 }
 

@@ -62,6 +62,8 @@ class Matrix
  * 返回整个矩阵的总和
  */
         float MatrixSum();
+        float MatrixMin();
+        float MatrixMax();
         float MatrixSum(Matrix *mat);
 
  /* Function: MatrixAverage
@@ -107,6 +109,7 @@ class Matrix
  * 删除内部的元素值
  */
         void ClearElement();
+        void Display();
 
 
 	private:
@@ -120,6 +123,8 @@ class Matrix
 		//假如表示权重，则对应该图片的权重值得到hidden层的图片
 		float **all_element_;
 		float sum_;
+		float min_;
+		float max_;
 };
 
 #endif /*matrix.h*/

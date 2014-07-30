@@ -65,7 +65,6 @@ vector<float>* Load::LoadData(string filename)
     {
         float buffer;
         fread(&buffer,1,4,pf);
-  //      cout << buffer <<endl;
         data->push_back(buffer);
         fseek (pf , 0 , 4*i);
     }

@@ -80,6 +80,13 @@ class Crbm
  * 返回权重值
  */
         vector<Matrix*>* GetWeight();
+        vector<Matrix*>* GetPooling();
+
+/* Function: GetReconstructionCost
+ * --------------------------------
+ * 返回重构损耗
+ */
+        float GetReconstructionCost(vector<Matrix*> &input_image, int pos);
 
 
     private:
@@ -110,8 +117,10 @@ class Crbm
         vector<Matrix*> pooling_map_;
         //存放经过对比差异CD_K更新后的v
         vector<Matrix*> vn_sample_;
+        vector<Matrix*> unsample_vn_sample_;
         //存放经过对比差异CD_K更新后的h
         vector<Matrix*> hn_sample_;
+        vector<Matrix*> unsample_hn_sample_;
         //保存偏导
         vector<Matrix*> dw_;
         vector<Matrix*> pre_dw_;
