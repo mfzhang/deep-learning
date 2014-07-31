@@ -6,8 +6,8 @@
  ************************************************************************/
 
 #include <iostream>
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include <cmath>
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -27,14 +27,14 @@ Show::~Show()
 
 }
 
-void Show::ShowMyMatrix8U(Matrix* m)
+void Show::ShowMyMatrix8U(Matrix* m, int pos)
 {
     int row = m->GetRowNum();
     Mat tmp(row, row, CV_8U);
     float min = m->MatrixMin();
     float max = m->MatrixMax();
     Matrix::MatrixAddBias(m, -min);
-    m->MatrixMulCoef(1.0/max);
+    m->MatrixMulCoef(1.0/(max+1e-8));
     for(int i = 0; i < row; i++)
     {
         for(int j = 0; j < row; j++)
@@ -42,9 +42,12 @@ void Show::ShowMyMatrix8U(Matrix* m)
             tmp.at<uchar>(i,j) = m->GetElement(i, j)*255.0;
         }
     }
-  //  namedWindow("OutputImage", WINDOW_AUTOSIZE);
+ //   namedWindow("OutputImage", WINDOW_AUTOSIZE);
     namedWindow("OutputImage", WINDOW_NORMAL);
     imshow("OutputImage", tmp);
+    stringstream ss;
+    ss << pos;
+    imwrite("result" + ss.str() +".jpg", tmp);
     waitKey();
     //因为OpenCV中的Mat图像格式文件是BGR的顺序,读取的文件是rgb
 }

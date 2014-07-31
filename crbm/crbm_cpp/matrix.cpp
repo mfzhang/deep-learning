@@ -27,8 +27,8 @@ void Matrix::init(int row, int col)
 	row_unfull_pos_ = 0;
 	col_unfull_pos_ = 0;
 	this->sum_ = 0;
-	this->min_ = 0;
-	this->max_ = 0;
+	this->min_ = 100000;
+	this->max_ = -100000;
 
 	//为二维数组分配内存
 	all_element_ = new float*[row];

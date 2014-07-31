@@ -8,7 +8,7 @@
 		<Cursor position="578" topLine="0" />
 	</File>
 	<File name="crbm.cpp" open="1" top="0" tabpos="1">
-		<Cursor position="2019" topLine="42" />
+		<Cursor position="634" topLine="99" />
 	</File>
 	<File name="crbm.h" open="1" top="0" tabpos="2">
 		<Cursor position="2524" topLine="68" />
@@ -20,19 +20,19 @@
 		<Cursor position="322" topLine="0" />
 	</File>
 	<File name="matrix.cpp" open="1" top="0" tabpos="4">
-		<Cursor position="1668" topLine="6" />
+		<Cursor position="614" topLine="63" />
 	</File>
 	<File name="matrix.h" open="1" top="0" tabpos="11">
 		<Cursor position="3204" topLine="99" />
 	</File>
 	<File name="show.cpp" open="1" top="0" tabpos="5">
-		<Cursor position="957" topLine="0" />
+		<Cursor position="979" topLine="39" />
 	</File>
 	<File name="show.h" open="1" top="0" tabpos="7">
-		<Cursor position="737" topLine="1" />
+		<Cursor position="703" topLine="1" />
 	</File>
 	<File name="test.cpp" open="1" top="1" tabpos="3">
-		<Cursor position="1678" topLine="44" />
+		<Cursor position="2232" topLine="105" />
 	</File>
 	<File name="utils.h" open="1" top="0" tabpos="9">
 		<Cursor position="1232" topLine="30" />

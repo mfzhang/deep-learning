@@ -27,7 +27,7 @@ Crbm::Crbm()
     this->l2reg_ = 0.01;
     this->ph_lambda = 5;
     this->ph = 0.002;
-    this->epsilon_ = 0.01;
+    this->epsilon_ = 0.005;
     this->momentum_ = 0.5;
     this->pooling_size_ = 2;
     this->std_gaussian_ = 0.2;
@@ -132,13 +132,14 @@ void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
                 {
                     (unsample_feature_map_.at(batch_idx) + i)->MatrixAddNew(  \
                                      Conv::Conv2d(input_image.at(batch_idx + pos) + j, weight_.at(k), 1), 1);
+                     //       (input_image.at(batch_idx + pos) + j)->Display();
                 }
                 Matrix::MatrixAddBias((unsample_feature_map_.at(batch_idx) + i), hbias_[i]);
 
                 (unsample_feature_map_.at(batch_idx) + i)->MatrixMulCoef(1.0/(std_gaussian_*std_gaussian_));
-              //  (unsample_feature_map_.at(batch_idx) + i)->Display();
-              //  Show show;
-              //  show.ShowMyMatrix8U(unsample_feature_map_.at(batch_idx) + i);
+             //   (unsample_feature_map_.at(batch_idx) + i)->Display();
+          //      Show show;
+           //     show.ShowMyMatrix8U(unsample_feature_map_.at(batch_idx) + i);
           /*      for(int m = 0; m < this->out_size_; m++)
                 {
                     for(int n = 0; n < this->out_size_; n++)
@@ -166,8 +167,8 @@ void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
                                     Conv::Conv2d((input_image.at(batch_idx + pos) + j), weight_.at(k), 1) , 1);
                 }
                 Matrix::MatrixAddBias((unsample_hn_sample_.at(batch_idx) + i), hbias_[i]);
-                (unsample_hn_sample_.at(batch_idx) + i)->Display();
                 (unsample_hn_sample_.at(batch_idx) + i)->MatrixMulCoef(1.0/(std_gaussian_*std_gaussian_));
+             //   (unsample_hn_sample_.at(batch_idx) + i)->Display();
                 for(int m = 0; m < this->out_size_/pooling_size_; m ++)
                 {
                     for(int n = 0; n < this->out_size_/pooling_size_; n ++)
@@ -194,6 +195,7 @@ void Crbm::ConvolutionForward(vector<Matrix*> &input_image, int pos)
                         }
                     }
                 }
+              //  (unsample_hn_sample_.at(batch_idx) + i)->Display();
             }
         }
     }
@@ -209,7 +211,7 @@ void Crbm::ConvolutionBackward(vector<Matrix*> &hidden_sample)
             Matrix *supply_hidden;
             supply_hidden = SupplyImage(hidden_sample.at(batch_idx) + i, filter_row_ - 1, false);
            // Show show;
-          //  show.ShowMyMatrix8U(supply_hidden);
+           // show.ShowMyMatrix8U(supply_hidden);
           //  supply_hidden->Display();
            // (weight_.at(i*(this->input_channels_)))->Display();
             //与三个权重做卷积
@@ -226,10 +228,10 @@ void Crbm::ConvolutionBackward(vector<Matrix*> &hidden_sample)
         {
               Matrix::MatrixAddBias((unsample_vn_sample_.at(batch_idx) + i), vbias_[i]);
 
-            Show show;
-            show.ShowMyMatrix8U(unsample_vn_sample_.at(batch_idx) + i);
+         //   Show show;
+         //   show.ShowMyMatrix8U(unsample_vn_sample_.at(batch_idx) + i);
          //    (unsample_vn_sample_.at(batch_idx) + i)->MatrixMulCoef(1/24);
-           (unsample_vn_sample_.at(batch_idx) + i)->Display();
+        //   (unsample_vn_sample_.at(batch_idx) + i)->Display();
       /*      for(int m = 0; m < this->input_row_; m++)
             {
                 for(int n = 0; n < this->input_row_; n++)
@@ -300,13 +302,15 @@ void Crbm::ComputeDerivative(vector<Matrix*> &input_image, int pos)
                                                          unsample_feature_map_.at(batch_idx) + i, 1), 1, \
                                              Conv::Conv2d((unsample_vn_sample_.at(batch_idx) + j), \
                                                           unsample_hn_sample_.at(batch_idx) + i, 1), -1);
+
                 dw_.at(i*input_channels_ + j)->MatrixAddNew(tmp_dw, 1);
                 tmp_dw->ClearElement();
             }
+            //weight_.at(i*input_channels_ + j)->Display();
             dw_.at(i*input_channels_ + j)->MatrixMulCoef(1.0/(this->batch_size_*this->out_size_*this->out_size_));
             dw_.at(i*input_channels_ + j)->MatrixAddNew(weight_.at(i*input_channels_ + j), -l2reg_);
-            dw_.at(i*input_channels_ + j)->MatrixMulCoef(this->momentum_);
-            dw_.at(i*input_channels_ + j)->MatrixAddNew(pre_dw_.at(i*input_channels_ + j), epsilon_);
+            dw_.at(i*input_channels_ + j)->MatrixMulCoef(this->epsilon_);
+            dw_.at(i*input_channels_ + j)->MatrixAddNew(pre_dw_.at(i*input_channels_ + j), momentum_);
             //将dw的内容拷贝到pre_dw
             for(int m = 0; m < this->filter_row_; m++)
             {
@@ -318,6 +322,7 @@ void Crbm::ComputeDerivative(vector<Matrix*> &input_image, int pos)
 
             //更新w
             this->weight_.at(i*input_channels_ + j)->MatrixAddNew(this->dw_.at(i*input_channels_ + j), 1);
+       //     weight_.at(i*input_channels_ + j)->Display();
         }
         //计算dh
         dhbias_.at(i) = 0;
@@ -333,6 +338,7 @@ void Crbm::ComputeDerivative(vector<Matrix*> &input_image, int pos)
         this->pre_dhbias_.at(i) = this->dhbias_.at(i);
         //更新hbias
         this->hbias_.at(i) = this->hbias_.at(i) + this->dhbias_.at(i);
+
     }
     for(int i = 0; i < this->input_channels_; i++)
     {
@@ -387,9 +393,7 @@ vector<Matrix*>* Crbm::MaxPooling()
                                          m*pooling_size_+row, n*pooling_size_+col, probs[row*this->pooling_size_ + col]/(1+sum));
                         }
                     }
-              //      Show show;
-          //  show.ShowMyMatrix8U(unsample_feature_map_.at(batch_idx) + i);
-         // (unsample_feature_map_.at(batch_idx) + i)->Display();
+
                     probs[this->pooling_size_*this->pooling_size_] = 1 / (1 + sum);
                     int pos = SubMaxPooling(probs, sum);
                     if(pos >= pooling_size_*pooling_size_)
@@ -404,6 +408,10 @@ vector<Matrix*>* Crbm::MaxPooling()
                     }
                 }
             }
+           //        Show show;
+           // show.ShowMyMatrix8U(unsample_feature_map_.at(batch_idx) + i);
+          //(unsample_feature_map_.at(batch_idx) + i)->Display();
+          //(feature_map_.at(batch_idx) + i)->Display();
             pooling_map_.push_back(p_pooling);
         }
 
@@ -467,9 +475,9 @@ Matrix* Crbm::SupplyImage(Matrix* mat, int supply_size, bool is_supply_final)
 
 vector<Matrix*>* Crbm::RunBatch(vector<Matrix*> &input_image, int pos)
 {
- //   ConvolutionForward(input_image, pos);
+    ConvolutionForward(input_image, pos);
     cout << "postive phase , forward success!" << endl;
- //   MaxPooling();
+    MaxPooling();
     cout << "pooling success!" << endl;
     //3.开始contrastive divergence
     for(int i = 0; i < this->CD_K_; i++)
@@ -514,8 +522,6 @@ float Crbm::GetReconstructionCost(vector<Matrix*> &input_image, int pos)
                             - (unsample_vn_sample_.at(batch_idx) + i)->GetElement(m,n))   \
                                 *((input_image.at(batch_idx + pos) + i)->GetElement(m,n)  \
                             - (unsample_vn_sample_.at(batch_idx) + i)->GetElement(m,n));
-                 //   cout << "input is  "<< (input_image.at(batch_idx + pos) + i)->GetElement(m,n) << endl;
-               //     cout << "reconsturction is  "<< (unsample_vn_sample_.at(batch_idx) + i)->GetElement(m,n) << endl;
                 }
             }
         }

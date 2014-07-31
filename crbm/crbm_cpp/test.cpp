@@ -52,7 +52,7 @@ int main()
 //	vector<float> *file_data = load.LoadData("./data_batch_1.bin");
 	//给100个图片赋初值
 	int k = 0;
-	for(int i = 0; i < 2; i++)
+	for(int i = 0; i < 50; i++)
 	{
 		Matrix *p_new_mat = new Matrix[3];
 		for(int j = 0; j < 3; j++)
@@ -67,7 +67,11 @@ int main()
 					k++;
 				}
 			}
-//			show.ShowMyMatrix8U(p_new_mat + j);
+            float min = (p_new_mat + j)->MatrixMin();
+            float max = (p_new_mat + j)->MatrixMax();
+            Matrix::MatrixAddBias((p_new_mat + j), -min);
+            (p_new_mat + j)->MatrixMulCoef(1.0/(max+1e-8));
+		//	show.ShowMyMatrix8U(p_new_mat + j);
 		}
 		input_image.push_back(p_new_mat);
 	}
@@ -77,15 +81,15 @@ int main()
 	*1.初始化参数         *
 	*2.训练              *
 	**********************/
-	int batch_all = 10;
+	int batch_all = 50;
 	layer_1.FilterInit(layer1_filter_size, layer1_channels, layer1_input_channels, layer1_image_size, batch_size, layer1_pooling_size);
 	cout << "layer1 initialize parameters success!\n";
 	int m = 0;
-	while(m < 1)
+	while(m < 4)
 	{
         for(int batch = 0; batch < batch_all/batch_size; batch++)
         {
-            cout << "batch size is " << batch <<  endl;
+            cout << "epoch is " << m <<  endl;
             cout << "----------------------------\n";
             vector<Matrix*> *tmp = layer_1.RunBatch(input_image, pos);
             if(batch == batch_all/batch_size - 1)
@@ -98,7 +102,7 @@ int main()
         m++;
     }
 
-/*    pos = 0;
+ /*   pos = 0;
     layer_2.FilterInit(layer2_filter_size, layer2_channels, layer2_input_channels, layer2_image_size, batch_size, layer2_pooling_size);
 	cout << "layer2 initialize parameters success!\n";
 	for(int batch = 0; batch < batch_all/batch_size; batch++)
@@ -120,7 +124,7 @@ int main()
 	for(int i = 0; i < w_size; i++)
 	{
 	    cout << "weight-----------------------\n";
-        show.ShowMyMatrix8U((*weight)[i]);
+        show.ShowMyMatrix8U((*weight)[i], i);
 	}
 /*
 	Py_Initialize();
