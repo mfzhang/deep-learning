@@ -68,6 +68,7 @@ vector<float>* Load::LoadData(string filename)
         data->push_back(buffer);
         fseek (pf , 0 , 4*i);
     }
+    fclose(pf);
     return data;
 }
 

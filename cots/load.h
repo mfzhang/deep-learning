@@ -20,7 +20,7 @@ class Load
  * ------------------
  * 这个函数返回输入文件的一个包含全部数据的float数组
  */
-        float* LoadData(string filename);
-        float* LoadPartData(string filename, long start, long end);
+        float* loadData(string filename);
+        float* loadPartData(string filename, long start, int length, int interval, int times);
 };
 

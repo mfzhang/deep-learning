@@ -154,8 +154,7 @@ def test_crbm(learning_rate = 0.1, batch_size = 2):
 	
 if __name__ == "__main__":
 	test_crbm()
-	
-	
+		
 	
 	
 	

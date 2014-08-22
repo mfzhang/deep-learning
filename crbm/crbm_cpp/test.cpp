@@ -67,10 +67,10 @@ int main()
 					k++;
 				}
 			}
-            float min = (p_new_mat + j)->MatrixMin();
-            float max = (p_new_mat + j)->MatrixMax();
-            Matrix::MatrixAddBias((p_new_mat + j), -min);
-            (p_new_mat + j)->MatrixMulCoef(1.0/(max+1e-8));
+   //         float min = (p_new_mat + j)->MatrixMin();
+  //          float max = (p_new_mat + j)->MatrixMax();
+   //         Matrix::MatrixAddBias((p_new_mat + j), -min);
+    //        (p_new_mat + j)->MatrixMulCoef(1.0/(max+1e-8));
 		//	show.ShowMyMatrix8U(p_new_mat + j);
 		}
 		input_image.push_back(p_new_mat);
