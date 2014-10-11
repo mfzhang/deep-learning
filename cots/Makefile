@@ -16,17 +16,23 @@ CBLIB = $(BLASPATH)lib/libcblas.a $(BLASPATH)lib/libatlas.a
 LIB1=./lib/libcblas.a
 LIB2=./lib/libatlas.a
 ####### Compile
-all: main runtest
 
-main: 
-#test:
-	$(MCXX) $(CFLAGES) main.cpp -I $(INCLUDE)
-	$(MCXX) $(CFLAGES) load.cpp
-	$(MCXX) -o main main.o load.o $(LIB1) $(LIB2) -lm
 
-runtest:
-	scp main root@gpu-server2:/home/common/crd/cots
-	mpirun_rsh -np 44 -hostfile hostfile ./main
-    
+showthree: showthree.cpp
+	$(CXX) $(CFLAGES) showthree.cpp
+	$(LINK) -o showthree showthree.o `pkg-config --libs opencv`
+
+showweight: showweight.cpp
+	$(CXX) $(CFLAGES) showweight.cpp
+	$(LINK) -o showweight showweight.o `pkg-config --libs opencv`
+
+show: show.cpp
+	$(CXX) $(CFLAGES) show.cpp
+	$(LINK) -o show show.o `pkg-config --libs opencv`
+
+svm: svmclassify.cpp
+	$(CXX) $(CFLAGES) svmclassify.cpp
+	$(LINK) -o svm svmclassify.o `pkg-config --libs opencv`
+
 cleanall:
-	rm -f *.o main
+	rm -f *.o show svmclassify showthree showweight

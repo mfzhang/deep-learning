@@ -6,8 +6,8 @@ import theano
 import theano.tensor as T
 
 def read_file():
-    f = np.fromarray('a.bin', dtype = np.float)
-    image = np.array(f, dtype = np.float).reshape((50, 3, 96*96))
+    f = np.fromarray('a.bin', dtype = np.float32)
+    image = np.array(f, dtype = np.float32).reshape((50, 3, 96*96))
     for k in range(0,200):
         b =[]
         for i in range(0,96):

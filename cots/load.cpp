@@ -76,7 +76,7 @@ float* Load::loadPartData(string filename, long start, int length, int interval,
     pf = fopen(filename.c_str(), "rb");
     for(int pos = 0, k = 0; pos < times; pos++)
     {
-        fseek (pf ,(start+pos*interval)*4, SEEK_SET);
+        fseek (pf ,(start + pos*interval)*4, SEEK_SET);
         for(int i = 0; i < length; i++)
         {
             float buffer;
