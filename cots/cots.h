@@ -17,17 +17,17 @@ class Cots
 	public:
 		Cots();
         Cots(int input_size, int input_channels, int filter_size, int filter_channels, int batch_size, int block_size, \
-                int step, int process_num, int thread_num, int pooling_size, float learning_rate, float alpha, float learning_rate_alpha, float momentum, float lambda, string in_address, string out_address);
+                int step, int process_num, int thread_num, int pooling_size, float learning_rate, float alpha, float learning_rate_alpha, float momentum, float lambda, string address);
 		~Cots();
 		void init(int input_size, int input_channels, int filter_size, int filter_channels, int batch_size, int block_size, \
-                int step, int process_num, int thread_num, int pooling_size, float learning_rate, float alpha, float learning_rate_alpha, float momentum, float lambda, string in_address, string out_address);
+                int step, int process_num, int thread_num, int pooling_size, float learning_rate, float alpha, float learning_rate_alpha, float momentum, float lambda, string address);
 /* Function: trainModel
  * --------------------
  * 给外界提供接口进行训练，外界提供me和epoch，和整个训练集个数,type原来是指是否进行预处理，现在认为每一层的输入都要进行预处理
  */
 		void testModel(int me, int epoch, int batch_all_size, bool type);
         void trainModel(int me, int epoch, int batch_all_size, bool type);
-        void preprocess(string in_address, int batch_idx, int num, int channels, int size, float *input, bool type);
+        void preprocess(int batch_idx, int num, int channels, int size, float *input, bool type);
 /* Function: initWeight
  * --------------------
  * 初始化weight
@@ -144,8 +144,7 @@ class Cots
 		int _epoch;
         float _lambda;
         float _delta_alpha;
-		string _input_address;
-        string _output_address;
+		string _address;
 		struct _Pars{
 			int input_channels;
 			int input_size;
