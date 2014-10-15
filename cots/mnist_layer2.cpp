@@ -23,7 +23,7 @@ void managerNode(int me, Cots layer2);
 void workerNode(int me, Cots layer2);
 
 int epoch = 4;
-int all_size = 6000;
+int all_size = 60000;
 string weight_name;
 
 int main(int argc, char **argv)
@@ -40,12 +40,11 @@ int main(int argc, char **argv)
     int layer2_thread_num = 6;
     int layer2_process_num = 6*6/layer2_thread_num;
     int layer2_pooling_size = 3;
-    float layer2_learning_rate = -100;
+    float layer2_learning_rate = -10;
     float layer2_learning_rate_alpha = -0.01;
-    float layer2_alpha = 0.5;
+    float layer2_alpha = 0.1;
     float layer2_momentum = -0.005;
-    float layer2_lambda = 0.01;
-    
+    float layer2_lambda = 0.1;
     Cots layer2;
     layer2.init(layer2_input_size, layer2_input_channels, layer2_filter_size, layer2_filter_channels, layer2_batch_size, \
              layer2_block_size, layer2_step, layer2_process_num, layer2_thread_num, layer2_pooling_size, layer2_learning_rate, \

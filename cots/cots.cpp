@@ -283,7 +283,7 @@ void Cots::preprocess(int batch_idx, int num, int channels, int size, float *inp
                     {
                         input[i*channels*size*size + j*size*size + m*size + n] = buffer[i*channels*size*size + j*size*size + m*size + n] - average;
                     }
-                }/*
+                }
                 float square = 0;
                 for(int m = 0; m < size; m++)
                 {
@@ -298,7 +298,7 @@ void Cots::preprocess(int batch_idx, int num, int channels, int size, float *inp
                     {
                         input[i*channels*size*size + j*size*size + m*size + n] = input[i*channels*size*size + j*size*size + m*size + n]/sqrt(square);
                     }
-                }*/
+                }
 
             }
         }
