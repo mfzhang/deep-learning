@@ -111,13 +111,10 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
             int r_size = this->_pars->input_size*this->_pars->input_size*this->_pars->input_channels*this->_pars->batch_size;
             if(me == 0)
             {
-                if(batch_idx == 0)
-                {
                     cout << "=============================\n";
-                    cout << "====epoch is " << epoch_idx<< "=====\n";
-                }
-                cout << "batch_idx is " << batch_idx << "\n";
+                    cout << "====epoch is " << epoch_idx <<  "   batch_idx is " << batch_idx << "=====\n";
                 //预处理图片
+
                 preprocess( batch_idx, this->_pars->batch_size, this->_pars->input_channels, this->_pars->input_size, this->_pars->input, type);
             }
             MPI_Bcast(this->_pars->input, r_size, MPI_FLOAT, 0, MPI_COMM_WORLD);
@@ -135,8 +132,25 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
             }
             MPI_Bcast(&this->_pars->alpha, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
-            if(me ==0 )
+            if(me == 0 )
             {
+                float cost = 0;
+                for(int i = 0 ; i < this->_pars->input_size*this->_pars->input_size*this->_pars->input_channels*this->_pars->batch_size; i++)
+                {
+                    cost += (this->_pars->receive_reconstruct[i] - this->_pars->input[i])*(this->_pars->receive_reconstruct[i] - this->_pars->input[i]);
+                }
+                float cost1 = 0;
+                for(int i = 0 ; i < this->_pars->out_size*this->_pars->out_size*this->_pars->filter_channels*this->_pars->batch_size; i++)
+                {
+                    cost1 += this->_pars->receive_pooling[i]*this->_lambda;
+                }
+                cout << "the delta alpha is " << this->_pars->learning_rate_alpha*this->_delta_alpha << "       "  << "the alpha is     " <<  this->_pars->alpha<< endl;            
+                cout << "============================================================================================================\n";
+                cout << "============================================================================================================\n";
+                cout << "cost of reconstruct is  " << cost << "  cost of pooling is  " << cost1 <<"     total cost is " << cost + cost1 << endl;
+                cout << "============================================================================================================\n";
+                cout << "============================================================================================================\n";
+    /*       
                 cout << "==========input=============\n";
                 for(int i = 0; i< 10; i++)
                 {
@@ -167,24 +181,7 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
                     cout<< this->_pars->receive_lcn[i]<< "\t";
                 }
                 cout << endl;  
-                
-                float cost = 0;
-                for(int i = 0 ; i < this->_pars->input_size*this->_pars->input_size*this->_pars->input_channels*this->_pars->batch_size; i++)
-                {
-                    cost += (this->_pars->receive_reconstruct[i] - this->_pars->input[i])*(this->_pars->receive_reconstruct[i] - this->_pars->input[i]);
-                }
-                float cost1 = 0;
-                for(int i = 0 ; i < this->_pars->out_size*this->_pars->out_size*this->_pars->filter_channels*this->_pars->batch_size; i++)
-                {
-                    cost1 += this->_pars->receive_pooling[i]*this->_lambda;
-                }
-                cout << "the delta alpha is " << this->_pars->learning_rate_alpha*this->_delta_alpha << "       "  << "the alpha is     " <<  this->_pars->alpha<< endl;            
-                cout << "============================================================================================================\n";
-                cout << "============================================================================================================\n";
-                cout << "cost of reconstruct is  " << cost << "  cost of pooling is  " << cost1 <<"     total cost is " << cost + cost1 << endl;
-                cout << "============================================================================================================\n";
-                cout << "============================================================================================================\n";
-				
+
                 if(epoch_idx == epoch - 1)
 				{
 					int length = this->_pars->input_size*this->_pars->input_size*this->_pars->input_channels*this->_pars->batch_size;
@@ -197,7 +194,7 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
 					subSaveFile(savename, length, this->_pars->receive_pooling, false);
 					savename = this->_address + "out.bin";
 					subSaveFile(savename, length, this->_pars->receive_lcn, false);
-				}
+				}*/
             }
         }
     }
@@ -318,7 +315,7 @@ void Cots::initWeight(int me, bool type)
             {   
                 this->_pars->block_weight[i] = RandomWeight();
             }     
-            buildWeight(me, this->_pars->block_weight, this->_pars->weight, process_idx, true);
+            buildWeight(this->_pars->block_weight, this->_pars->weight, process_idx, true);
         }
     }
     else
@@ -345,11 +342,11 @@ void Cots::filterLayer(int me, int batch_idx)
     for(int process_idx = 0; process_idx < this->_pars->process_num; process_idx++)
     {
         buildR(me, this->_pars->block_input, this->_pars->input, process_idx, false);
-        buildWeight(me, this->_pars->block_weight, this->_pars->normalize_weight, process_idx, false); 
+        buildWeight(this->_pars->block_weight, this->_pars->normalize_weight, process_idx, false); 
         computeH();
         computeR();           
-        buildR(me, this->_pars->block_reconstruct, this->_pars->send_reconstruct, process_idx, true);
         buildH(me, this->_pars->block_hidden, this->_pars->send_hidden, process_idx, true); 
+        buildR(me, this->_pars->block_reconstruct, this->_pars->send_reconstruct, process_idx, true);
     }
     //进行通信，将r全部加在一起，并得到合成后的r
     MPI_Allreduce(this->_pars->send_reconstruct, this->_pars->receive_reconstruct, r_size, MPI_FLOAT, \
@@ -492,7 +489,7 @@ void Cots::buildR(int me, float *block, float *all, int process_idx, bool ward)
                     if(ward)
                     {
                         //将block_r还原到r矩阵
-                        all[start + m*this->_pars->input_size + n] += block[pos];
+                        all[start + m*this->_pars->input_size + n] = block[pos];
                     }
                     else
                     {
@@ -504,7 +501,7 @@ void Cots::buildR(int me, float *block, float *all, int process_idx, bool ward)
     }
 }
 
-void Cots::buildWeight(int me, float *block, float *all, int process_idx, bool ward)
+void Cots::buildWeight( float *block, float *all, int process_idx, bool ward)
 {
     int length = this->_pars->filter_size*this->_pars->filter_size*this->_pars->filter_channels*this->_pars->input_channels*this->_pars->block_size*this->_pars->block_size;
     int start = process_idx*length;
@@ -562,7 +559,6 @@ void Cots::inverseProjWeight(float *graident, float *origin_weight, float *proje
 
 void Cots::computeP(int me, int process_idx, int type)
 {
-    //type表示是计算pooling，还是h/p
     for(int i = 0; i < this->_pars->batch_size; i++)
     {
         for(int j = 0; j < this->_pars->filter_channels; j++)
@@ -752,29 +748,31 @@ void Cots::updateW(int me, int batch_idx)
     zeros(block_origin_weight, length);
     for(int process_idx = 0; process_idx < this->_pars->process_num; process_idx++)
     {       	
+        int r_length = this->_pars->batch_size*this->_pars->filter_size*this->_pars->filter_size*this->_pars->input_channels;
+        int h_length = this->_pars->filter_channels*this->_pars->block_size*this->_pars->block_size*this->_pars->batch_size;
+        zeros(block_dw1, length);
+        zeros(block_dw2, length);
+        zeros(block_winc, length);
+        zeros(block_origin_weight, length);
+        zeros(this->_pars->block_weight, length);
+        zeros(this->_pars->block_input, r_length);
+        zeros(this->_pars->block_hidden, h_length);
+        zeros(this->_pars->block_reconstruct, r_length);
+        zeros(this->_pars->block_pooling, h_length);
+
         buildR(me, this->_pars->block_input, this->_pars->input, process_idx, false);
-        buildWeight(me, this->_pars->block_weight, this->_pars->normalize_weight, process_idx, false);
-        buildWeight(me, block_origin_weight, this->_pars->weight, process_idx, false);
-        buildWeight(me, block_winc, this->_pars->winc, process_idx, false);
+        buildWeight(this->_pars->block_weight, this->_pars->normalize_weight, process_idx, false);
+        buildWeight( block_origin_weight, this->_pars->weight, process_idx, false);
+        buildWeight( block_winc, this->_pars->winc, process_idx, false);
         buildH(me, this->_pars->block_hidden, this->_pars->receive_hidden, process_idx, false);
         buildR(me, this->_pars->block_reconstruct, this->_pars->receive_reconstruct, process_idx, false);
 
-   /*     if(me == 0&&process_idx == 0)
-        {
-            cout << "=========delta_w1, delta_w2=========\n";
-            for(int i = 0; i < 10; i++)
-            {
-                cout << this->_pars->block_hidden[i]  << ":" << this->_pars->block_weight[i] << ":" << block_origin_weight[i]<< ":"<< this->_pars->block_reconstruct[i]<< "\t";
-            }
-            cout << endl;
-        }*/
-        int h_length = this->_pars->filter_channels*this->_pars->block_size*this->_pars->block_size*this->_pars->batch_size;
-        zeros(this->_pars->block_pooling, h_length);
         //计算第一层的dw
         computeDw1(block_dw1);
         //计算第二层的dw
         computeP(me, process_idx, 1);
         computeDw2(block_dw2);
+        
         //更新权重
         if(me == 0&&process_idx == 0)
         {
@@ -786,12 +784,13 @@ void Cots::updateW(int me, int batch_idx)
             cout << endl;
         }
         catlas_saxpby(length, 2, block_dw1, 1, 1, block_dw2, 1);
+        
         //将dw反向投影回原平面
         inverseProjWeight(block_dw2, block_origin_weight, this->_pars->block_weight);
         catlas_saxpby(length, this->_pars->momentum, block_winc, 1, this->_pars->learning_rate, block_dw2, 1);
         catlas_saxpby(length, 1, block_dw2, 1, 1, block_origin_weight, 1);
-        buildWeight(me, block_origin_weight, this->_pars->weight, process_idx, true);
-        buildWeight(me, block_dw2, this->_pars->winc, process_idx, true);
+        buildWeight( block_origin_weight, this->_pars->weight, process_idx, true);
+        buildWeight( block_dw2, this->_pars->winc, process_idx, true);
         zeros(this->_pars->block_pooling, h_length);
         computeP(me, process_idx, 2);
         float sum = 0;
@@ -803,7 +802,7 @@ void Cots::updateW(int me, int batch_idx)
     }
     float send_delta_alpha = this->_delta_alpha/this->_pars->batch_size;
     MPI_Allreduce(&send_delta_alpha, &this->_delta_alpha, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
-    if(me == 0)
+/*    if(me == 0)
     {
         cout << "=========weight=========\n";
         for(int i = 0; i < 100; i++)
@@ -817,7 +816,7 @@ void Cots::updateW(int me, int batch_idx)
             cout << block_dw2[i] << "\t";
         }
         cout << endl;
-    }
+    }*/
 
     delete[] block_dw1;
     delete[] block_dw2;
@@ -833,7 +832,9 @@ void Cots::updateAlpha()
     {
         sum += 2*(this->_pars->receive_reconstruct[i] - this->_pars->input[i])*this->_pars->receive_reconstruct[i];
     }
+    cout << "the delta alpha 1 is : " << this->_delta_alpha << "     ";
     this->_delta_alpha += sum/(this->_pars->alpha*this->_pars->batch_size);
+    cout << "the delta alpha 2 is : " << sum/(this->_pars->alpha*this->_pars->batch_size) << "\n";
 }
 
 

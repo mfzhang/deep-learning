@@ -19,11 +19,11 @@ void scaleToUnitInterval(Mat &dispImg, ifstream &fin, int size, int channels, in
 
 int main()
 {
-	ifstream fin1("../data/mnist_layer2_0.bin", ios::binary);
-	ifstream fin2("../data/mnist_layer2_1.bin", ios::binary);
-	ifstream fin3("../data/mnist_layer2_2.bin", ios::binary);
+	ifstream fin1("../data/mnist_layer1_w.bin", ios::binary);
+	ifstream fin2("../data/mnist_layer1_5.bin", ios::binary);
+	ifstream fin3("../data/mnist_layer1_6.bin", ios::binary);
 	int num = 6;
-	int size = 8;
+	int size = 10;
 	int channels = 20;
 	for(int i = 0; i < num; i++)
 	{

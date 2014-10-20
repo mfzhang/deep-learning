@@ -12,46 +12,55 @@ using namespace std;
 
 //void sort1(float*,float*);
 void sort2(float* w1,float* sort_w1,int index,int filter,int row,int input_channel,int hidden_channel,int hidden_block,int block1);
-void storeImage2(float* out,int index,int relate_size,int input_channel,int hidden_block,string path);
-void storeImage(float *Weight,int input,int input_channel,int filter,int hidden_block,string outpath);
+void storeImage2(float* out,int index,int relate_size,int input_channel,int hidden_block,string path,int picture_row,int picture_col);
+void storeImage(float *Weight,int input,int input_channel,int filter,int hidden_block,string outpath,int picture_row,int picture_col);
 void loadlayer3();
 void loadlayer2();
 void loadlayer1();
 
 int main(){
 	loadlayer1();
-	//loadlayer2();
+	loadlayer2();
 	//loadlayer3();
 	return 0;
 }
 
 void loadlayer1(){
 	//minist1
-		
-	string w_file="minist1_w_t2.dat";
-	string outpath="./minist1_feature_t2/";
+/*		
+	string w_file="../data/mnist_layer1_w.bin";
+	string outpath="./minist1_feature_t1/";
 	int input_channel=1;
+	int hidden_channel=3;
 	int filter=10;
 	int hidden_block=2*2*3;
 	int input=28;
-	
+	int picture_row=4*input_channel;
+	int picture_col=hidden_channel;
+*/	
 	//minist2
-	/*
-	string w_file="minist2_w_t2.dat";
-	string outpath="./minist2_t2/";
+	
+	string w_file="../data/mnist_layer2_w.bin";
+	string outpath="./minist2_t1/";
 	int input_channel=3;
+	int hidden_channel=3;
 	int filter=10;
 	int hidden_block=2*2*3;
 	int input=20;
-*/
+	int picture_row=4*input_channel;
+	int picture_col=hidden_channel;
+
 	//stl1
 /*	
 	string w_file="first_w_t6.dat";
 	string outpath="./l1_feature_t6/";
 	int input_channel=3;
+	int hidden_channel=8;
 	int filter=10;
 	int hidden_block=2*2*8;
 	int input=96;
+	int picture_row=4*input_channel;
+	int picture_col=hidden_channel;
 */
 	int block_number=((input-filter)/2+1)*((input-filter)/2+1);
 	int size_w=hidden_block*block_number*filter*filter*input_channel;
@@ -59,7 +68,7 @@ void loadlayer1(){
 	ifstream fp(w_file.c_str(),ios::in|ios::binary);
 	fp.read((char*)w,size_w*sizeof(float));
 	fp.close();
-	storeImage(w,input,input_channel,filter,hidden_block,outpath);
+	storeImage(w,input,input_channel,filter,hidden_block,outpath,picture_row,picture_col);
 }
 
 void loadlayer2(){
@@ -73,18 +82,28 @@ void loadlayer2(){
 	   int hidden_channel=8;
 	   int hidden_block=2*2*8;
 	   int block1=44;
+	   //第二层block数量40*40,不显示全部
+	   int block_number=40;
+	   int picture_row=4*input_channel;
+	   int picture_col=hidden_channel;
+	   
 */	   
 
 	//minist
 	
-	string w_file1="minist1_w_t1.dat";
-	string w_file2="minist2_w_t2.dat";
-	string path="./minist2_feature_t2/";
+	string w_file1="../data/mnist_layer1_w.bin";
+	string w_file2="../data/mnist_layer2_w.bin";
+	string path="./minist2_feature_t1/";
 	int filter=10;
 	int input_channel=1;
 	int hidden_channel=3;
 	int hidden_block=2*2*3;
+	//第一层block数量的row
 	int block1=10;
+	//第二层block数量
+	int block_number=36;
+	int picture_row=4*input_channel;
+	int picture_col=hidden_channel;
 
 	int size_w1=block1*block1*hidden_block*filter*filter*input_channel;
 	int size_w2=hidden_block*filter*filter*hidden_channel;
@@ -98,12 +117,11 @@ void loadlayer2(){
 	ifstream fp1(w_file1.c_str(),ios::in|ios::binary);
 	fp1.read((char*)w1,size_w1*sizeof(float));
 	fp1.close();
-	int block_number=36;//30*30 or 6*6;
 	ifstream fp2(w_file2.c_str(),ios::in|ios::binary);
 	for(int i=0;i<block_number;i++){
 		fp2.read((char*)w2,size_w2*sizeof(float));
 		sort2(w1,sort_w1,i,filter,filter,input_channel,hidden_channel,hidden_block,block1);
-		
+		/*	
 		cout<<"-------w1------"<<i<<"block-----------"<<endl;
 		for(int j=0;j<filter*filter;j++){
 			cout<<j<<":"<<w1[j]<<" ";
@@ -114,12 +132,12 @@ void loadlayer2(){
 			cout<<j<<":"<<sort_w1[j]<<" ";
 		}
 		cout<<endl;
-		
+		*/
 		int M=hidden_block;
 		int K=filter*filter*hidden_channel;
 		int N=relate_size*relate_size*input_channel;
 		cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,M,N,K,1,w2,K,sort_w1,N,0,out,N);
-		storeImage2(out,i,relate_size,input_channel,hidden_block,path);
+		storeImage2(out,i,relate_size,input_channel,hidden_block,path,picture_row,picture_col);
 	}
 	fp2.close();
 	delete[] w1;
@@ -132,15 +150,17 @@ void loadlayer2(){
 void loadlayer3(){
 	//stl
 	/*	
-	   string w_file1="first_w_t1.dat";
-	   string w_file2="second_w_t1.dat";
-	   string w_file3="third_w_t1.dat";
-	   string path="./l3_feature_t1/";
-	   int filter=10;
-	   int input_channel=3;
-	   int hidden_channel=8;
-	   int hidden_block=2*2*8;
-	   int block1=44;
+	string w_file1="first_w_t1.dat";
+	string w_file2="second_w_t1.dat";
+	string w_file3="third_w_t1.dat";
+	string path="./l3_feature_t1/";
+	int filter=10;
+	int input_channel=3;
+	int hidden_channel=8;
+	int hidden_block=2*2*8;
+	int block1=44;
+	int picture_row=4*input_channel;
+	int picture_col=hidden_channel;
 	  */ 
 
 	//minist
@@ -156,6 +176,8 @@ void loadlayer3(){
 	int block1=10;
 	int block2=6;
 	int block3=2;
+	int picture_row=4*input_channel;
+	int picture_col=hidden_channel;
 	
 	//the size of input related to a h2 block
 	int relate_size=filter*2-2;
@@ -206,7 +228,7 @@ void loadlayer3(){
 		int K=filter*filter*hidden_channel;
 		int N=relate_size1*relate_size1*input_channel;
 		cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans,M,N,K,1,w3,K,sort_w2,N,0,out2,N);
-		storeImage2(out2,i,relate_size1,input_channel,hidden_block,path);
+		storeImage2(out2,i,relate_size1,input_channel,hidden_block,path,picture_row,picture_col);
 	}
 	fp3.close();
 	delete[] w1;
@@ -244,15 +266,15 @@ void sort2(float* w1,float* sort_w1,int index,int filter,int row,int input_chann
 				int index_sort_w1=row_index*relative_row*relative_row*input_channel+col_index;
 				sort_w1[index_sort_w1]=w1[block_index*hidden_block*row*row*input_channel+p];
 				
-				if(i==0) cout<<index_sort_w1<<" ";
+				//if(i==0) cout<<index_sort_w1<<" ";
 				p++;
 			}
 		}
-		if(i==0) cout<<endl;
+		//if(i==0) cout<<endl;
 	}
 }
 
-void storeImage2(float* out,int index,int relate_size,int input_channel,int hidden_block,string path){
+void storeImage2(float* out,int index,int relate_size,int input_channel,int hidden_block,string path,int picture_row,int picture_col){
 	int size=relate_size;
 	int number=hidden_block;
 	for(int i=0;i<number*input_channel;i++){
@@ -277,17 +299,21 @@ void storeImage2(float* out,int index,int relate_size,int input_channel,int hidd
 	compression_params.push_back(0);
 
 	Mat dispImg;
-	dispImg.create(Size((size+1)*input_channel*4,(size+1)*number/4),CV_8U);
-	for(int i=0;i<number/4;i++){
-		for(int j=0;j<input_channel*4;j++){
+	dispImg.create((size+1)*picture_row-1,(size+1)*picture_col-1,CV_8UC1);
+	vector<Mat> feature(1);
+	for(int i=0;i<picture_col;i++){
+		for(int j=0;j<picture_row;j++){
 			Mat tmp(size,size,CV_8U);
 			for(int m=0;m<size;m++){
 				for(int n=0;n<size;n++){
-					tmp.at<uchar>(n,m)=out[i*size*size*input_channel+j*size*size+m*size+n]*255;
+					tmp.at<uchar>(n,m)=out[i*size*size*picture_row+j*size*size+m*size+n]*255;
 				}
 			}
-			Mat imgROI=dispImg(Rect(j*(size+1),i*(size+1),size,size));
-			resize(tmp,imgROI,Size(size,size));
+			Mat imgROI(dispImg,Rect(i*(size+1),j*(size+1),size,size));
+			feature[0]=tmp;
+			merge(feature,imgROI);
+			//Mat roi(display,Rect(m*(w+1),n*(h+1),w,h));
+			//resize(tmp,imgROI,Size(size,size));
 		}
 	}
 	stringstream stream1;
@@ -303,12 +329,10 @@ void storeImage2(float* out,int index,int relate_size,int input_channel,int hidd
 
 }
 
-void storeImage(float *Weight,int input,int input_channel,int filter,int hidden_block,string outpath){
+void storeImage(float *Weight,int input,int input_channel,int filter,int hidden_block,string outpath,int picture_row,int picture_col){
 	int block_number=((input-filter)/2+1)*((input-filter)/2+1);
 	int size_w=hidden_block*block_number*filter*filter*input_channel;
 	int size_feature=filter*filter;
-	int picture_row=4;//4 
-	int picture_col=3;//3
 	int size_picture=size_feature*picture_row*picture_col;
 	int number_feature=size_w/size_feature;
 	int number_picture=size_w/size_picture;

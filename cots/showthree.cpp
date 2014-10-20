@@ -19,9 +19,9 @@ void scaleToUnitInterval(Mat &dispImg, ifstream &fin, int size, int channels, in
 
 int main()
 {
-	ifstream fin1("../data/mnist_layer1out.bin", ios::binary);
-	ifstream fin2("../data/preprocessed.bin", ios::binary); 
-	ifstream fin3("../data/reconstruct.bin", ios::binary); 
+	ifstream fin1("../data/mnist_layer1_hidden.bin", ios::binary);
+	ifstream fin2("../data/mnist_layer1_pooling.bin", ios::binary); 
+	ifstream fin3("../data/mnist_layer2_in.bin", ios::binary); 
 //	ifstream fin1("../data/layer1_0.bin", ios::binary);
 //	ifstream fin2("../data/layer1_1.bin", ios::binary);
 //	ifstream fin3("../data/layer1_10.bin", ios::binary);
@@ -83,18 +83,19 @@ void scaleToUnitInterval(Mat &dispImg, ifstream &fin, int size, int channels, in
 					if(min_value > buffer)
 						min_value = buffer;
 					read_value[m*size + n] = buffer;
-//					sum += buffer;
+					sum += buffer;
 				}
 			}
 		}
-//		sum = sum/(size*size); 
+		sum = sum/(size*size); 
 		float dist = max_value - min_value;
 		for(int m = 0; m < size; m++)
 		{
 			for(int n = 0; n < size; n++)
 			{
-	//			tmp.at<uchar>(n,m) = (read_value[m*size + n] - sum)/dist*255;
+				tmp.at<uchar>(n,m) = (read_value[m*size + n] - sum)/dist*255;
 				tmp.at<uchar>(n,m) = (read_value[m*size + n] - min_value)/dist*255;
+		//		tmp.at<uchar>(n,m) = read_value[m*size + n]*255;
 			}
 		}
 		Mat imgROI = dispImg(Rect(j*(1+size), pos*size + 1, size, size));

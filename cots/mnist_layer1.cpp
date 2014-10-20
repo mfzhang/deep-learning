@@ -22,9 +22,9 @@ using namespace std;
 void managerNode(int me, Cots layer1);
 void workerNode(int me, Cots layer1);
 
-int epoch = 10;
+int epoch = 5;
 
-int all_size = 60000;
+int all_size = 4000;
 string weight_name;
 
 int main(int argc, char **argv)
@@ -42,11 +42,11 @@ int main(int argc, char **argv)
     int layer1_process_num = 10*10/layer1_thread_num;
     int layer1_pooling_size = 3;
     float layer1_learning_rate = -10;
-    float layer1_learning_rate_alpha = -0.005;
-    float layer1_alpha = 0.2;
-    float layer1_momentum = 0.005;
+    float layer1_learning_rate_alpha = -0.001;
+    float layer1_alpha = 0.4;
+    float layer1_momentum = -0.005;
     //lambda控制dw1和dw2的区别
-    float layer1_lambda = 0.01;
+    float layer1_lambda = 0;
 
 
     Cots layer1;

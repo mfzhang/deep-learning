@@ -10,11 +10,12 @@ LINK = g++
 CXXFLAGES = -O3 -DADD_
 MC = mpicc
 MCXX=mpicxx
-BLASPATH = /opt/atlas/
-INCLUDE = $(BLASPATH)include
-CBLIB = $(BLASPATH)lib/libcblas.a $(BLASPATH)lib/libatlas.a
-LIB1=./lib/libcblas.a
-LIB2=./lib/libatlas.a
+#CBLASPATH = /home/crd/crd/deeplearning/CBLAS/CBLAS/
+#BLASPATH = /home/crd/crd/deeplearning/CBLAS/BLAS/
+BLASPATH = /usr/local/lib
+CBLASPATH = /home/crd/crd/github/deep/cblas/CBLAS/include/
+INCLUDE = $(CBLASPATH)
+CBLIB =  ./lib/libcblas.a ./lib/libblas.a
 ####### Compile
 
 
@@ -34,5 +35,17 @@ svm: svmclassify.cpp
 	$(CXX) $(CFLAGES) svmclassify.cpp
 	$(LINK) -o svm svmclassify.o `pkg-config --libs opencv`
 
+get_feature: get_feature.cpp
+	$(CXX) $(CFLAGES) get_feature.cpp -I $(INCLUDE)
+	$(LINK) -o get_feature get_feature.o  $(CBLIB) `pkg-config --libs opencv`  -lgfortran
+
+showlayer2: showlayer2.cpp
+	$(CXX) $(CFLAGES) showlayer2.cpp -I $(INCLUDE)
+	$(LINK) -o showlayer2 showlayer2.o  $(CBLIB) `pkg-config --libs opencv`  -lgfortran
+
+savefeature: savefeature.cpp
+	$(CXX) $(CFLAGES) savefeature.cpp -I $(INCLUDE)
+	$(LINK) -o savefeature savefeature.o  $(CBLIB) `pkg-config --libs opencv`  -lgfortran
+
 cleanall:
-	rm -f *.o show svmclassify showthree showweight
+	rm -f *.o show svmclassify showthree showweight get_feature showlayer2 savefeature

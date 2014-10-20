@@ -32,7 +32,7 @@ class Cots
  * --------------------
  * 初始化weight
  */
-		void initWeight(int me, bool type);
+		void initWeight(int me,  bool type);
 		
 /* Function: filterLayer
  * ---------------------
@@ -80,7 +80,7 @@ class Cots
  * ---------------------
  * 初始化权重，weight按block来存,ward表示是取还是存，type表示是train还是test
  */
- 		void buildWeight(int me, float *block, float *all, int process_idx, bool ward);
+ 		void buildWeight( float *block, float *all, int process_idx, bool ward);
 
 /* Function: normalizeWeight
  * -------------------------
