@@ -306,16 +306,14 @@ void Cots::preprocess(int batch_idx, int num, int channels, int size, float *inp
 
 void Cots::initWeight(int me, bool type)
 {
-    int length = this->_pars->filter_size*this->_pars->filter_size*this->_pars->filter_channels*this->_pars->input_channels*this->_pars->block_size*this->_pars->block_size;
+    int length = this->_pars->process_num*this->_pars->filter_size*this->_pars->filter_size*this->_pars->filter_channels*this->_pars->input_channels*this->_pars->block_size*this->_pars->block_size;
     if(type)
     {
-        for(int process_idx = 0; process_idx < this->_pars->process_num; process_idx++)
+        for(int i = 0; i < length; i++)
         {
-            for(int i = 0; i < length; i++)
-            {   
-                this->_pars->block_weight[i] = RandomWeight();
-            }     
-            buildWeight(this->_pars->block_weight, this->_pars->weight, process_idx, true);
+            
+             float tmp = (rand()%2000 - 1000)/1000.0;
+             this->_pars->weight[i] = tmp;
         }
     }
     else
@@ -342,9 +340,8 @@ void Cots::filterLayer(int me, int batch_idx)
     for(int process_idx = 0; process_idx < this->_pars->process_num; process_idx++)
     {
         buildR(me, this->_pars->block_input, this->_pars->input, process_idx, false);
-        buildWeight(this->_pars->block_weight, this->_pars->normalize_weight, process_idx, false); 
-        computeH();
-        computeR();           
+        computeH(process_idx);
+        computeR(process_idx);           
         buildH(me, this->_pars->block_hidden, this->_pars->send_hidden, process_idx, true); 
         buildR(me, this->_pars->block_reconstruct, this->_pars->send_reconstruct, process_idx, true);
     }
@@ -410,12 +407,12 @@ void Cots::lcnLayer(int me, int batch_idx)
            }*/
 }
 
-void Cots::computeH()
+void Cots::computeH(int process_idx)
 {
     int m = this->_pars->filter_channels*this->_pars->block_size*this->_pars->block_size,
         n = this->_pars->batch_size,
         k = this->_pars->filter_size*this->_pars->filter_size*this->_pars->input_channels;
-    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, this->_pars->alpha, this->_pars->block_weight, k, this->_pars->block_input, n, 0, this->_pars->block_hidden, n);
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, this->_pars->alpha, this->_pars->normalize_weight + m*k*process_idx, k, this->_pars->block_input, n, 0, this->_pars->block_hidden, n);
 }
 
 void Cots::buildH(int me, float *block, float *all, int process_idx, bool ward)
@@ -450,12 +447,12 @@ void Cots::buildH(int me, float *block, float *all, int process_idx, bool ward)
     }
 }
 
-void Cots::computeR()
+void Cots::computeR(int process_idx)
 {
     int m = this->_pars->filter_size*this->_pars->filter_size*this->_pars->input_channels,
         n = this->_pars->batch_size,
         k = this->_pars->filter_channels*this->_pars->block_size*this->_pars->block_size;
-    cblas_sgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k, 1, this->_pars->block_weight, m, this->_pars->block_hidden, n, 0, this->_pars->block_reconstruct, n);
+    cblas_sgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k, 1, this->_pars->normalize_weight + m*k*process_idx, m, this->_pars->block_hidden, n, 0, this->_pars->block_reconstruct, n);
 }
 
 void Cots::buildR(int me, float *block, float *all, int process_idx, bool ward)
@@ -487,23 +484,6 @@ void Cots::buildR(int me, float *block, float *all, int process_idx, bool ward)
                     }
                 }
             }
-        }
-    }
-}
-
-void Cots::buildWeight( float *block, float *all, int process_idx, bool ward)
-{
-    int length = this->_pars->filter_size*this->_pars->filter_size*this->_pars->filter_channels*this->_pars->input_channels*this->_pars->block_size*this->_pars->block_size;
-    int start = process_idx*length;
-    for(int m = 0; m < length; m++)
-    {
-        if(ward)
-        {
-            all[start + m] = block[m];
-        }
-        else
-        {
-            block[m] = all[start + m];
         }
     }
 }
@@ -588,26 +568,22 @@ void Cots::computeP(int me, int process_idx, int type)
                                         {
                                             if(this->_pars->receive_pooling[start_in_receive + (m+k)*this->_pars->out_size + n+t] != 0)
                                             {
-                                                //      sum += this->_pars->receive_hidden[start_in_receive + (k+m)*this->_pars->block_size + \
-                                                //           t + n]/this->_pars->receive_pooling[start_in_receive + m*this->_pars->out_size + n];
                                                 sum += this->_pars->receive_hidden[start_in_receive + m*this->_pars->block_size + \
                                                        n]/this->_pars->receive_pooling[start_in_receive + (m+k)*this->_pars->out_size + n+t];
                                             }
                                             break;
                                         }
-                                    case 2:
+                               /*     case 2:
                                         {
                                             if(this->_pars->receive_pooling[start_in_receive + (m+k)*this->_pars->out_size + n+t] != 0)
                                             {
-                                                //   sum += this->_pars->receive_hidden[start_in_receive + (k+m)*this->_pars->out_size + \
-                                                //          t + n]*this->_pars->receive_hidden[start_in_receive + (k+m)*this->_pars->out_size + \
-                                                //          t + n]/this->_pars->receive_pooling[start_in_receive + m*this->_pars->out_size + n];
-                                                sum += this->_pars->receive_hidden[start_in_receive + m*this->_pars->out_size + \
-                                                       n]*this->_pars->receive_hidden[start_in_receive + m*this->_pars->out_size + \
-                                                       n]/this->_pars->receive_pooling[start_in_receive + (m+k)*this->_pars->out_size + n+t];
+                                                //sum += this->_pars->receive_hidden[start_in_receive + m*this->_pars->out_size + \
+                                                //       n]*this->_pars->receive_hidden[start_in_receive + m*this->_pars->out_size + \
+                                                //       n]/this->_pars->receive_pooling[start_in_receive + (m+k)*this->_pars->out_size + n+t];
+                                                sum += this->_pars->receive_pooling[start_in_receive + (m+k)*this->_pars->out_size + n+t];
                                             }
                                             break;
-                                        }
+                                        }*/
                                 }
                             }
                         }
@@ -625,11 +601,11 @@ void Cots::computeP(int me, int process_idx, int type)
                                 this->_pars->block_pooling[pos_in_block] = sum; 
                                 break;
                             }
-                        case 2:
+                    /*    case 2:
                             {
                                 this->_pars->block_pooling[pos_in_block] = sum;
                                 break;
-                            }
+                            }*/
                     }
                 }
             }
@@ -730,35 +706,25 @@ void Cots::updateW(int me, int batch_idx)
     int length = this->_pars->filter_size*this->_pars->filter_size*this->_pars->filter_channels*this->_pars->input_channels*this->_pars->block_size*this->_pars->block_size;
     float *block_dw1 = new float[length]; 
     float *block_dw2 = new float[length];
-    float *block_winc = new float[length];
-    float *block_origin_weight = new float[length];
     zeros(block_dw1, length);
     zeros(block_dw2, length);
-    zeros(block_winc, length);
-    zeros(block_origin_weight, length);
     for(int process_idx = 0; process_idx < this->_pars->process_num; process_idx++)
     {       	
         int r_length = this->_pars->batch_size*this->_pars->filter_size*this->_pars->filter_size*this->_pars->input_channels;
         int h_length = this->_pars->filter_channels*this->_pars->block_size*this->_pars->block_size*this->_pars->batch_size;
         zeros(block_dw1, length);
         zeros(block_dw2, length);
-        zeros(block_winc, length);
-        zeros(block_origin_weight, length);
-        zeros(this->_pars->block_weight, length);
         zeros(this->_pars->block_input, r_length);
         zeros(this->_pars->block_hidden, h_length);
         zeros(this->_pars->block_reconstruct, r_length);
         zeros(this->_pars->block_pooling, h_length);
 
-        buildR(me, this->_pars->block_input, this->_pars->input, process_idx, false);
-        buildWeight(this->_pars->block_weight, this->_pars->normalize_weight, process_idx, false);
-        buildWeight( block_origin_weight, this->_pars->weight, process_idx, false);
-        buildWeight( block_winc, this->_pars->winc, process_idx, false);
+        buildR(me, this->_pars->block_input, this->_pars->input, process_idx, false);        
         buildH(me, this->_pars->block_hidden, this->_pars->receive_hidden, process_idx, false);
         buildR(me, this->_pars->block_reconstruct, this->_pars->receive_reconstruct, process_idx, false);
 
         //计算第一层的dw
-        computeDw1(block_dw1);
+        computeDw1(block_dw1, process_idx);
         //计算第二层的dw
         computeP(me, process_idx, 1);
         computeDw2(block_dw2);
@@ -767,7 +733,7 @@ void Cots::updateW(int me, int batch_idx)
         if(me == 0&&process_idx == 0)
         {
             cout << "=========delta_w1, delta_w2=========\n";
-            for(int i = 0; i < 10; i++)
+            for(int i = 0; i < 20; i++)
             {
                 cout << block_dw1[i]  << ":" << block_dw2[i] << "\t";
             }
@@ -776,20 +742,18 @@ void Cots::updateW(int me, int batch_idx)
         catlas_saxpby(length, 2, block_dw1, 1, 1, block_dw2, 1);
         
         //将dw反向投影回原平面
-        inverseProjWeight(block_dw2, block_origin_weight, this->_pars->block_weight);
-        catlas_saxpby(length, this->_pars->momentum, block_winc, 1, this->_pars->learning_rate, block_dw2, 1);
-        catlas_saxpby(length, -1, block_dw2, 1, 1, block_origin_weight, 1);
-        buildWeight( block_origin_weight, this->_pars->weight, process_idx, true);
-        buildWeight( block_dw2, this->_pars->winc, process_idx, true);
-        zeros(this->_pars->block_pooling, h_length);
-        computeP(me, process_idx, 2);
-        float sum = 0;
-        for(int i = 0; i < h_length; i++)
-        {
-            sum += this->_pars->block_pooling[i];
-        }
-        this->_delta_alpha += this->_lambda*sum/this->_pars->alpha;
+        inverseProjWeight(block_dw2, this->_pars->weight + process_idx*length, this->_pars->normalize_weight + process_idx*length);
+        catlas_saxpby(length, this->_pars->momentum, this->_pars->winc + process_idx*length, 1, this->_pars->learning_rate, block_dw2, 1);
+        catlas_saxpby(length, -1, block_dw2, 1, 1, this->_pars->weight + process_idx*length, 1);
+        
     }
+    float sum = 0;
+    int h_length = this->_pars->filter_channels*this->_pars->out_size*this->_pars->out_size*this->_pars->batch_size;
+    for(int i = 0; i < h_length; i++)
+    {
+        sum += this->_pars->receive_pooling[i];
+    }
+    this->_delta_alpha = this->_lambda*sum/this->_pars->alpha;
     float send_delta_alpha = this->_delta_alpha/this->_pars->batch_size;
     MPI_Allreduce(&send_delta_alpha, &this->_delta_alpha, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
     if(me == 0)
@@ -797,7 +761,7 @@ void Cots::updateW(int me, int batch_idx)
         cout << "=========weight=========\n";
         for(int i = 0; i < 100; i++)
         {
-            cout << block_origin_weight[i] << "\t";
+            cout << this->_pars->weight[i] << "\t";
         }
         cout << endl;
         cout << "=========delta_weight=========\n";
@@ -810,8 +774,6 @@ void Cots::updateW(int me, int batch_idx)
 
     delete[] block_dw1;
     delete[] block_dw2;
-    delete[] block_winc;
-    delete[] block_origin_weight;
 }
 
 void Cots::updateAlpha()
@@ -829,7 +791,7 @@ void Cots::updateAlpha()
 
 
 
-void Cots::computeDw1(float *block_dw1)
+void Cots::computeDw1(float *block_dw1, int process_idx)
 {
 
     int block_r_size = this->_pars->batch_size*this->_pars->filter_size*this->_pars->filter_size*this->_pars->input_channels;
@@ -847,7 +809,7 @@ void Cots::computeDw1(float *block_dw1)
         k = this->_pars->batch_size;
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, 1, this->_pars->block_hidden, k, this->_pars->block_reconstruct, k, 0, block_h_r, n);
     //计算w*(r-x)
-    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, k, n, 1, this->_pars->block_weight, n, this->_pars->block_reconstruct, k, 0, block_w_r, k);
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, k, n, 1, this->_pars->normalize_weight + m*n*process_idx, n, this->_pars->block_reconstruct, k, 0, block_w_r, k);
     //计算w*(r-x)*x'
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, this->_pars->alpha, block_w_r, k, this->_pars->block_input, k, 0, block_dw1, n);
     //计算h*(r-x)'+ alpha*w*(r-x)*x'
@@ -905,12 +867,9 @@ void Cots::assignMemory()
 {
     //1.初始化w
     //weight大小为2*2*8*10*10*3，列为2*2*8，行为10*10*3
-    int length = this->_pars->filter_size*this->_pars->filter_size*this->_pars->filter_channels*this->_pars->input_channels*this->_pars->block_size*this->_pars->block_size;
-    this->_pars->block_weight = new float[length];
     int weight_length = this->_pars->process_num*this->_pars->filter_size*this->_pars->filter_size*this->_pars->input_channels*this->_pars->filter_channels*this->_pars->block_size*this->_pars->block_size;
     this->_pars->weight = new float[weight_length];
     this->_pars->normalize_weight = new float[weight_length];
-    zeros(this->_pars->block_weight, length);
     zeros(this->_pars->weight, weight_length);
     zeros(this->_pars->normalize_weight, weight_length);
     //2.初始化x
@@ -954,7 +913,6 @@ void Cots::assignMemory()
 void Cots::clearMemory()
 {
     delete[] this->_pars->block_input;
-    delete[] this->_pars->block_weight;
     delete[] this->_pars->block_hidden;
     delete[] this->_pars->block_reconstruct;
     delete[] this->_pars->block_pooling;

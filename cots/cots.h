@@ -56,7 +56,7 @@ class Cots
  * -------------------
  * 用来计算w*x
  */
-		void computeH();
+		void computeH(int process_idx);
 
 /* Function: buildH
  * ----------------
@@ -68,19 +68,13 @@ class Cots
  * ------------------
  * 计算每一个小的r
  */
-		void computeR();
+		void computeR(int process_idx);
 		
 /* Function: buildR
  * ----------------
  * 将r还原成大的r
  */
 		void buildR(int me, float *block, float *all, int process_idx, bool ward);
- 		
-/* Function：initWeight
- * ---------------------
- * 初始化权重，weight按block来存,ward表示是取还是存，type表示是train还是test
- */
- 		void buildWeight( float *block, float *all, int process_idx, bool ward);
 
 /* Function: normalizeWeight
  * -------------------------
@@ -110,7 +104,7 @@ class Cots
  * --------------------
  * 计算fliter层造成的偏导，h*(r-x)'+ w*(r-x)*x'
  */
-	    void computeDw1(float *block_dw1);
+	    void computeDw1(float *block_dw1, int process_idx);
 		
 /* Function: computeDw2
  * --------------------
