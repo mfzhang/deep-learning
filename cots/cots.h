@@ -138,6 +138,11 @@ class Cots
 		int _epoch;
         float _lambda;
         float _delta_alpha;
+        int _block_sqrt;
+        int _input_sqrt;
+        int _out_sqrt;
+        int _filter_sqrt;
+        int _pooling_sqrt;
 		string _address;
 		struct _Pars{
 			int input_channels;
