@@ -12,8 +12,8 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
+#include <cstdlib>
 #include "mpi.h"
-#include "utils.h"
 #include "cots.h"
 extern "C"{
 #include "cblas.h"
@@ -136,11 +136,13 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
                         this->_pars->input_size, this->_pars->input, type);
             }
             MPI_Bcast(this->_pars->input, r_size, MPI_FLOAT, 0, MPI_COMM_WORLD);
+            
             filterLayer(me, batch_idx);
-            poolingLayer(me, batch_idx);
-            lcnLayer(me, batch_idx);
+//            poolingLayer(me, batch_idx);
+//            lcnLayer(me, batch_idx);
             updateW(me, batch_idx);
             normalizeWeight();
+            
             if(me == 0)
             {
                 updateAlpha();
@@ -170,15 +172,15 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
                     << cost + cost1*this->_lambda << endl;
                 cout << "============================================================================================================\n";
                 cout << "============================================================================================================\n";
-           
+/*           
                 cout << "==========input=============\n";
-                for(int i = 0; i< 100; i++)
+                for(int i = 0; i< 10; i++)
                 {
                     cout << this->_pars->input[i] << "\t";
                 }
                 cout << endl;
                 cout << "==========reconstruct=============\n";
-                for(int i = 0; i< 100; i++)
+                for(int i = 0; i< 10; i++)
                 {
                     cout << this->_pars->receive_reconstruct[i]<< "\t";
                 }
@@ -189,7 +191,7 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
                     cout<<this->_pars->receive_hidden[i] << "\t";
                 }
                 cout << endl;
-                cout << "==========pooling=============\n";
+               cout << "==========pooling=============\n";
                 for(int i = 0; i< 10; i++)
                 {
                     cout<< this->_pars->receive_pooling[i] << "\t";
@@ -201,7 +203,7 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
                     cout<< this->_pars->receive_lcn[i]<< "\t";
                 }
                 cout << endl;  
-
+*/
                 if(epoch_idx == epoch - 1)
 				{
 					int length = this->_input_sqrt * this->_pars->input_channels \
@@ -219,7 +221,7 @@ void Cots::trainModel(int me, int epoch, int batch_all_size, bool type)
 				}
             }
         }
-        if((epoch_idx + 1) % 50 == 0 && epoch_idx != 0)
+        if((epoch_idx + 1) % 10 == 0 && epoch_idx != 0)
         {
             stringstream ss1, ss2;
             ss1 << me;
@@ -402,6 +404,14 @@ void Cots::filterLayer(int me, int batch_idx)
         computeR(process_idx);           
         buildH(me, this->_pars->block_hidden, this->_pars->send_hidden, \
                 process_idx, true); 
+        if(me == 0 && process_idx == 0)
+        {
+            cout << "\n=====process 0, compute r===== \n";
+            for(int i = 0; i < 100; i++)
+            {
+                cout << this->_pars->block_input[i] << ":" << i << "\t";
+            }
+        }
         buildR(me, this->_pars->block_reconstruct, \
                 this->_pars->send_reconstruct, process_idx, true);
     }
@@ -442,16 +452,6 @@ void Cots::lcnLayer(int me, int batch_idx)
     } 
     MPI_Allreduce(this->_pars->send_lcn, this->_pars->receive_lcn, \
             h_size, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
-    /*       if(me == 5)
-             {
-             cout << "================reduce===============\n";
-             for(int i = 0; i < 200; i++)
-             {
-    //   cout << this->_pars->send_lcn[i] << " \t" ;
-    cout << this->_pars->send_lcn[i]  <<  ":" <<  this->_pars->receive_lcn[i] << " \t" ;
-    }
-    cout << endl;
-    }*/
 
     zeros(this->_pars->send_lcn, h_size);
     for(int process_idx = 0; process_idx < this->_pars->process_num; process_idx++)
@@ -476,11 +476,11 @@ void Cots::computeH(int process_idx)
 
 void Cots::buildH(int me, float *block, float *all, int process_idx, bool ward)
 {
-    int id = process_idx*this->_pars->thread_num + me;
-    int row_block = id/(this->_pars->out_size/this->_pars->step);
-    int col_block = id%(this->_pars->out_size/this->_pars->step);
-    int block_start = row_block*this->_pars->step*this->_pars->out_size \
-                      + col_block*this->_pars->step;
+    int id = process_idx * this->_pars->thread_num + me;
+    int row_block = id / (this->_pars->out_size / this->_pars->step);
+    int col_block = id % (this->_pars->out_size / this->_pars->step);
+    int block_start = row_block * this->_pars->step * this->_pars->out_size \
+                      + col_block * this->_pars->step;
     for(int i = 0; i < this->_pars->batch_size; i++)
     {
         for(int j = 0; j < this->_pars->filter_channels; j++)
@@ -523,11 +523,11 @@ void Cots::computeR(int process_idx)
 
 void Cots::buildR(int me, float *block, float *all, int process_idx, bool ward)
 {
-    int id = process_idx*this->_pars->thread_num + me;
-    int row_block = id/(this->_pars->out_size/this->_pars->step);
-    int col_block = id%(this->_pars->out_size/this->_pars->step);
-    int block_start = row_block*this->_pars->step*this->_pars->input_size \
-                      + col_block*this->_pars->step;
+    int id = process_idx * this->_pars->thread_num + me;
+    int row_block = id / (this->_pars->out_size / this->_pars->step);
+    int col_block = id % (this->_pars->out_size / this->_pars->step);
+    int block_start = row_block * this->_pars->step * this->_pars->input_size \
+                      + col_block * this->_pars->step;
     for(int i = 0; i < this->_pars->batch_size; i++)
     {                    
         for(int j = 0; j < this->_pars->input_channels; j++)
@@ -546,7 +546,7 @@ void Cots::buildR(int me, float *block, float *all, int process_idx, bool ward)
                     if(ward)
                     {
                         //将block_r还原到r矩阵
-                        all[all_pos] = block[pos];
+                        all[all_pos] += block[pos];
                     }
                     else
                     {
@@ -573,11 +573,12 @@ void Cots::normalizeWeight()
             int w_pos = process_pos + i;
             sum += this->_pars->weight[w_pos]*this->_pars->weight[w_pos];
         }
+        sum = sqrt(sum);
         for(int i = 0; i < length2; i++)
         {
             int w_pos = process_pos + i;
             this->_pars->normalize_weight[w_pos] \
-                = this->_pars->weight[w_pos]/sqrt(sum);
+                = this->_pars->weight[w_pos]/sum;
         }
     }
 }
@@ -609,10 +610,10 @@ void Cots::inverseProjWeight(float *graident, float *origin_weight, \
 
 void Cots::computeP(int me, int process_idx, int type)
 {
-    int boundary = this->_pars->out_size/this->_pars->block_size;
-    int id = process_idx*this->_pars->thread_num + me;
-    int row_block = id/boundary;
-    int col_block = id%boundary;
+    int boundary = this->_pars->out_size / this->_pars->block_size;
+    int id = process_idx * this->_pars->thread_num + me;
+    int row_block = id / boundary;
+    int col_block = id % boundary;
     int block_start = row_block*this->_pars->step*this->_pars->out_size \
                            + col_block*this->_pars->step;
     int a[18] = {-1,-1,-1,0,-1,1,0,-1,0,0,0,1,1,-1,1,0,1,1};
@@ -776,16 +777,14 @@ void Cots::updateW(int me, int batch_idx)
 {
     int length = this->_filter_sqrt * this->_pars->filter_channels \
                  * this->_pars->input_channels * this->_block_sqrt;
+    int r_length = this->_pars->batch_size * this->_filter_sqrt \
+                    * this->_pars->input_channels;
+    int h_length = this->_pars->filter_channels * this->_block_sqrt \
+                    * this->_pars->batch_size;
     float *block_dw1 = new float[length]; 
     float *block_dw2 = new float[length];
-    zeros(block_dw1, length);
-    zeros(block_dw2, length);
     for(int process_idx = 0; process_idx < this->_pars->process_num; process_idx++)
     {       	
-        int r_length = this->_pars->batch_size * this->_filter_sqrt \
-                       * this->_pars->input_channels;
-        int h_length = this->_pars->filter_channels * this->_block_sqrt \
-                       * this->_pars->batch_size;
         zeros(block_dw1, length);
         zeros(block_dw2, length);
         zeros(this->_pars->block_input, r_length);
@@ -800,22 +799,49 @@ void Cots::updateW(int me, int batch_idx)
         buildR(me, this->_pars->block_reconstruct, \
                 this->_pars->receive_reconstruct, process_idx, false);
 
+        if(me == 0 && process_idx == 0)
+        {
+            cout << "\n=====process 0, compute r===== \n";
+            for(int i = 0; i < 100; i++)
+            {
+                cout << this->_pars->block_input[i] << ":" << i << "\t";
+            }
+        }
+/*        if(me == 0)
+        {
+            cout << "\n==============x,r============\n";
+            for(int i = 0; i < 10; i++)
+            {
+                cout << this->_pars->block_input[i] << \
+                    ":" << this->_pars->block_reconstruct[i] << ":" \
+                    << this->_pars->block_reconstruct[i] - this->_pars->block_input[i];
+            }
+            cout << "\n==============x,r============\n";
+            for(int i = 0; i < h_length; i++)
+            {
+                cout << this->_pars->block_hidden[i] << "\t";
+            }
+            cout << endl;
+        }*/
+
         //计算第一层的dw
         computeDw1(block_dw1, process_idx);
+            
         //计算第二层的dw
         computeP(me, process_idx, 1);
         computeDw2(block_dw2);
         
         //更新权重
-        if(me == 0 && process_idx == 0)
+/*        if(me == 0 && process_idx == 0)
         {
             cout << "=========delta_w1, delta_w2=========\n";
-            for(int i = 0; i < 20; i++)
+            for(int i = 0; i < 100; i++)
             {
                 cout << block_dw1[i]  << ":" << block_dw2[i] << "\t";
             }
             cout << endl;
-        }
+        }*/
+
         catlas_saxpby(length, 2, block_dw1, 1, 1, block_dw2, 1);
         
         //将dw反向投影回原平面
@@ -832,21 +858,21 @@ void Cots::updateW(int me, int batch_idx)
             this->_pars->winc[pos] = block_dw2[i];
         }
     }
-    if(me == 0)
+/*    if(me == 0)
     {
         cout << "=========weight=========\n";
         for(int i = 0; i < 100; i++)
         {
-            cout << this->_pars->weight[i] << "\t";
+            cout << i << ":" << this->_pars->weight[i] << "\t";
         }
         cout << endl;
         cout << "=========delta_weight=========\n";
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < 100; i++)
         {
-            cout << block_dw2[i] << "\t";
+            cout << i << ":" << block_dw2[i] << "\t";
         }
         cout << endl;
-    }
+    }*/
 
     delete[] block_dw1;
     delete[] block_dw2;
@@ -883,39 +909,30 @@ void Cots::updateAlpha()
 
 void Cots::computeDw1(float *block_dw1, int process_idx)
 {
-
-    int block_r_size = this->_pars->batch_size*this->_filter_sqrt \
-                       * this->_pars->input_channels;
-    //计算r-x，存在r里面
-    catlas_saxpby(block_r_size, -1, this->_pars->block_input, 1, \
-                  1, this->_pars->block_reconstruct, 1);
-    int block_w_size = this->_filter_sqrt * this->_pars->input_channels \
-                       * this->_block_sqrt*this->_pars->filter_channels;
-    int block_w_r_size = this->_block_sqrt * this->_pars->filter_channels \
-                         * this->_pars->batch_size;
-    float *block_h_r = new float[block_w_size];
-    float *block_w_r = new float[block_w_r_size];
-    zeros(block_h_r, block_w_size);
-    zeros(block_w_r, block_w_r_size);
-    //计算h*(r-x)'
     int m = this->_block_sqrt * this->_pars->filter_channels,
         n = this->_pars->input_channels * this->_filter_sqrt,
         k = this->_pars->batch_size;
+
+    int block_r_size = n * k;
+    //计算r-x，存在r里面
+    catlas_saxpby(block_r_size, -1, this->_pars->block_input, 1, \
+                  1, this->_pars->block_reconstruct, 1);
+    int block_w_r_size = m * k;
+    float *block_w_r = new float[block_w_r_size];
+    zeros(block_w_r, block_w_r_size);
+    //计算h*(r-x)'
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, \
             1, this->_pars->block_hidden, k, \
-            this->_pars->block_reconstruct, k, 0, block_h_r, n);
+            this->_pars->block_reconstruct, k, 0, block_dw1, n);
     //计算w*(r-x)
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, k, n, \
-            1, this->_pars->normalize_weight + m*n*process_idx, n, \
-            this->_pars->block_reconstruct, k, 0, block_w_r, k);
+            1, this->_pars->normalize_weight + m * n * process_idx, \
+            n, this->_pars->block_reconstruct, k, 0, block_w_r, k);
     //计算w*(r-x)*x'
+    //计算h*(r-x)'+ alpha*w*(r-x)*x'
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, \
             this->_pars->alpha, block_w_r, k, this->_pars->block_input, \
-            k, 0, block_dw1, n);
-    //计算h*(r-x)'+ alpha*w*(r-x)*x'
-    catlas_saxpby(block_w_size, 1, block_h_r, 1, 1, block_dw1, 1);
-
-    delete[] block_h_r;
+            k, 1, block_dw1, n);
     delete[] block_w_r;
 }
 
