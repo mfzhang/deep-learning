@@ -32,3 +32,8 @@ cpu调不出来，准备开始写gpu
 发现cudaSgemm是host上的函数不能用在kernel中,int i以后可以改成unsigned int i
 人脸变成灰度图并预处理
 
+10月31日
+改变代码风格，将代码变得紧凑一些
+只用reconstruct是无法学到特征的
+代码调粗来了！
+查看关于face detection的论文，考虑是否能做同样的事情

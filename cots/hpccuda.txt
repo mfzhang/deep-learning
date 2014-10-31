@@ -1,3 +1,4 @@
 
 cudasgemm列主，存储模式https://developer.nvidia.com/sites/default/files/akamai/cuda/files/Misc/mygpu.pdf，假如输入为行主则会报错
 dim3表示维度，自己在变量后面填入几个变量就是几个维度
+
