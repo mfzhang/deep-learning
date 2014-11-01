@@ -195,12 +195,18 @@ void Cots::trainModel(int me, int epoch, int all_size, bool type){
 				}
             }
         }
-        if((epoch_idx + 1) % 10 == 0 && epoch_idx != 0){
-            stringstream ss1, ss2;
-            ss1 << me;
-            ss2 << epoch_idx;
-            savename = this->_address + ss1.str() + "_" + ss2.str() +  ".bin";
-            saveWeight(savename);
+        if((epoch_idx + 1) % 10 == 0){
+            const int weight_all_length = weight_length*this->_pars->thread_num;
+            float *all_w = new float[weight_all_length];
+            MPI_Gather(this->_pars->weight, weight_length, MPI_FLOAT, all_w, weight_length, \
+                    MPI_FLOAT, 0, MPI_COMM_WORLD); 
+            if(me == 0){
+                stringstream ss2;
+                ss2 << epoch_idx;
+                savename = this->_address  + ss2.str() +  "_w.bin";
+                subSaveFile(savename, weight_all_length, all_w, true);
+            }
+            delete[] all_w;
         }
     }
     delete[] this->_pars->winc;
@@ -805,14 +811,6 @@ void Cots::computeDw2(float *block_dw2){
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, \
             this->_lambda*this->_pars->alpha, this->_pars->block_pooling, \
             k, this->_pars->block_input, k, 0, block_dw2, n);
-}
-
-
-void Cots::saveWeight(string filename){
-    int length = this->_pars->process_num*this->_filter_sqrt \
-                 * this->_pars->input_channels * this->_block_sqrt \
-                 * this->_pars->filter_channels;
-    subSaveFile(filename.c_str(), length, this->_pars->weight, true);
 }
 
 void Cots::subSaveFile(string filename, int length, float *data, bool type){

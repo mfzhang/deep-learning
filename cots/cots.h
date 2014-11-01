@@ -116,8 +116,6 @@ class Cots
  * ------------------
  * 保存weight，r，h
  */
-        void saveWeight(string filename);
-//        void saveOutput();
         void subSaveFile(string filename, int length, float *data, bool type);
 
         void zeros(float *all, int length);
