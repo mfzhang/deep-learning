@@ -1,0 +1,75 @@
+
+=====================================
+                face
+=====================================
+*************************************
+t1: 0.001.out
+input_number:5000
+n_epoch:50
+alpha:0.35
+ela:0.001
+learning_rate:3
+u:0.005
+alpha_learning_rate:0.001
+-------------------------------------
+R_cost:1.72349  P_cost:5.87987  all_cost:7.60335
+alpha:0.199893
+
+*************************************
+t2: 0.005.out
+input_number:5000
+n_epoch:50
+alpha:0.35
+ela:0.01
+learning_rate:3
+u:0.005
+alpha_learning_rate:0.001
+--------------------------------------
+R_cost:7.38394  P_cost:12.128   all_cost:19.512
+alpha:0.0538119
+
+***************************************
+t3: 0.01.out
+input_number:5000
+n_epoch:1000
+alpha:0.8
+ela:0.01
+learning_rate:5
+u:0.005
+alpha_learning_rate:0.0005
+----------------------------------------
+epoch:336
+R_cost:22.2071  P_cost:8.21818  all_cost:30.4252
+alpha:0.063062
+epoch:49
+R_cost:30.0376  P_cost:6.2753   all_cost:36.3129
+alpha:0.0403823
+
+****************************************
+t4: 
+input_number:5000
+n_epoch:1000
+alpha:0.8
+ela:0.01
+learning_rate:10
+u:0.005
+alpha_learning_rate:0.0005
+----------------------------------------
+epoch:323
+R_cost:27.1367  P_cost:5.6468   all_cost:32.7835
+alpha:0.0854014
+epoch:49
+R_cost:30.155   P_cost:5.2642   all_cost:35.4192
+alpha:0.0590719
+
+
+
+
+
+
+
+
+
+
+
+

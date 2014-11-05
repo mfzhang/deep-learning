@@ -39,15 +39,15 @@ int main(int argc, char **argv)
     int layer1_batch_size = 40;
     int layer1_block_size = 2;
     int layer1_step = 2;
-    int layer1_thread_num = 22;
+    int layer1_thread_num = 11;
     int layer1_process_num = 44*44/layer1_thread_num;
     int layer1_pooling_size = 3;
-    float layer1_learning_rate = 10;
+    float layer1_learning_rate = 3;
     float layer1_learning_rate_alpha = 0.001;
-    float layer1_alpha = 0.2;
-    float layer1_momentum = -0.005;
+    float layer1_alpha = 0.4;
+    float layer1_momentum = 0.005;
     //lambda控制dw1和dw2的区别
-    float layer1_lambda = 0.01;
+    float layer1_lambda = 0.001;
 
     Cots layer1;
     layer1.init(layer1_input_size, layer1_input_channels, layer1_filter_size, layer1_filter_channels, layer1_batch_size, \
