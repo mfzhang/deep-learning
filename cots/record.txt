@@ -3,7 +3,7 @@
                 face
 =====================================
 *************************************
-t1:0.001.out
+t1:lr3_l0.001.out
 input_number:5000
 n_epoch:50
 alpha:0.35
@@ -20,7 +20,81 @@ alpha:0.199893
 全局特征不明显，特征收敛较慢
 
 *************************************
-t2: 0.005.out
+t5: 
+input_number:5000
+n_epoch:50
+alpha:0.35
+ela:0.001
+learning_rate:5
+u:0.005
+alpha_learning_rate:0.001
+-------------------------------------
+epoch:0
+R_cost:18.3245  P_cost:8.09443  all_cost:26.4189
+epoch:49
+R_cost:1.65271  P_cost:5.80554  all_cost:7.45825
+alpha:0.190848
+epoch:303
+R_cost:1.01551  P_cost:5.01585  all_cost:6.03136
+alpha:0.159087
+epoch:999
+R_cost:0.666153 P_cost:4.52815  all_cost:5.1943
+alpha:0.157451
+
+*************************************
+t6:lr3_l0.001.out
+input_number:5000
+n_epoch:1000
+alpha:0.35
+ela:0.001
+learning_rate:3
+u:0.005
+alpha_learning_rate:0.001
+-------------------------------------
+epoch:0
+R_cost:18.3566  P_cost:8.06015  all_cost:26.4167
+epoch:49
+R_cost:2.05158  P_cost:5.9755   all_cost:8.02708
+alpha:0.199865
+epoch:102
+R_cost:1.35656  P_cost:5.52981  all_cost:6.88637
+alpha:0.184206
+
+*************************************
+t7:lr5_a0.8_l0.001.out
+input_number:5000
+n_epoch:1000
+alpha:0.8
+ela:0.001
+learning_rate:5
+u:0.005
+alpha_learning_rate:0.001
+-------------------------------------
+epoch:0
+R_cost:105.979  P_cost:18.3408  all_cost:124.32
+epoch:49
+R_cost:1.46344  P_cost:6.03873  all_cost:7.50217
+alpha:0.213023
+
+*************************************
+t8:lr3_a0.8_l0.001.out
+input_number:5000
+n_epoch:1000
+alpha:0.8
+ela:0.001
+learning_rate:3
+u:0.005
+alpha_learning_rate:0.001
+-------------------------------------
+epoch:0
+R_cost:105.58   P_cost:18.3208  all_cost:123.901
+epoch:49
+R_cost:1.84476  P_cost:6.21212  all_cost:8.05688
+alpha:0.21938
+
+
+*************************************
+t2: lr3_l0.005.out
 input_number:5000
 n_epoch:50
 alpha:0.35
@@ -37,7 +111,7 @@ alpha:0.0538119
 训练出部分特征，特征收敛较快
 
 ***************************************
-t3: 0.01.out
+t3: lr5_l0.01.out
 input_number:5000
 n_epoch:1000
 alpha:0.8
@@ -55,8 +129,9 @@ epoch:336
 R_cost:22.2071  P_cost:8.21818  all_cost:30.4252
 alpha:0.063062
 特征收敛较快
+
 ****************************************
-t4:  
+t4: lr10_l0.01.out
 input_number:5000
 n_epoch:1000
 alpha:0.8
@@ -73,6 +148,9 @@ alpha:0.0590719
 epoch:323
 R_cost:27.1367  P_cost:5.6468   all_cost:32.7835
 alpha:0.0854014
+
+
+
 
 
 
